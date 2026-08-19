@@ -981,7 +981,9 @@
   function inicializarBanco() {
     let banco = localStorage.getItem('banco_usuarios');
     if (!banco) {
-
+      const ALUNOS_DB_INICIAL = [];
+      localStorage.setItem('banco_usuarios', JSON.stringify(ALUNOS_DB_INICIAL));
+    }
   }
   inicializarBanco();
 
