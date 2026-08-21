@@ -419,6 +419,7 @@
 </style>
 </head>
 <body>
+<div id="overlay-carregando" style="position:fixed;inset:0;background:#132720;color:#eef2ea;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:sans-serif;font-size:18px;">Carregando dados do servidor...</div>
 
 <div class="stage">
 
@@ -447,7 +448,7 @@
   <!-- ABAS DOS PAIS -->
   <div class="steps hidden" id="steps-pais">
     <div class="step-tab" data-step="pais-login">1 · Login dos Pais</div>
-    <div class="step-tab" data-step="pais-busca">2 · Buscar Filho</div>
+    <div class="step-tab" data-step="pais-busca">2 · Meus Filhos</div>
     <div class="step-tab" data-step="pais-boletim">3 · Boletim Escolar</div>
   </div>
   
@@ -582,6 +583,7 @@
       <div class="campo">
         <label for="pais-telefone">Número de Telefone / WhatsApp (Com DDD)</label>
         <input type="tel" id="pais-telefone" placeholder="(11) 99999-9999">
+        <p style="font-size:11px; color:var(--paper-shadow); margin:4px 2px 0;">Use o mesmo telefone que a escola cadastrou como responsável do(a) aluno(a).</p>
       </div>
 
       <div class="campo">
@@ -594,11 +596,11 @@
     </div>
 
     <div class="panel hidden" id="tela-pais-busca">
-      <p class="saudacao">Acesso dos Responsáveis</p>
-      <p class="sub" id="pais-boas-vindas">Pesquise pelo seu filho no sistema para visualizar o boletim.</p>
-      
-      <div class="campo">
-        <label for="pais-busca-input">Buscar Nome ou RA do Filho(a)</label>
+      <p class="saudacao">Meus Filhos</p>
+      <p class="sub" id="pais-boas-vindas">Alunos vinculados ao seu telefone.</p>
+
+      <div class="campo" id="pais-filtro-wrap" style="display:none;">
+        <label for="pais-busca-input">Filtrar por nome ou RA</label>
         <div class="busca-box">
           <input type="text" id="pais-busca-input" placeholder="Digite o nome do aluno ou RA..." style="margin-bottom:0;">
           <button class="btn" type="button" id="btn-pais-buscar" style="width:100px; padding:10px; margin-top:0;">Buscar</button>
@@ -647,7 +649,7 @@
         <button class="btn btn-green" type="button" style="margin-bottom:10px;">📱 Falar com a Escola / Professores</button>
       </a>
 
-      <button class="btn btn-ghost" type="button" onclick="mostrarTela('pais-busca')">← Voltar para Busca de Alunos</button>
+      <button class="btn btn-ghost" type="button" id="btn-pais-voltar" onclick="mostrarTela('pais-busca')">← Voltar para Meus Filhos</button>
     </div>
 
     <!-- ============================================== -->
@@ -824,6 +826,7 @@
               <th>Turma</th>
               <th>Nome</th>
               <th>RA</th>
+              <th>Responsável</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -896,6 +899,16 @@
         </div>
       </div>
 
+      <div class="campo">
+        <label for="dir-novo-resp-nome">Nome do Responsável (opcional)</label>
+        <input type="text" id="dir-novo-resp-nome" placeholder="Nome do pai/mãe/responsável">
+      </div>
+
+      <div class="campo">
+        <label for="dir-novo-resp-tel">Telefone do Responsável (para vínculo do Portal dos Pais)</label>
+        <input type="tel" id="dir-novo-resp-tel" placeholder="(11) 99999-9999">
+      </div>
+
       <div class="erro" id="erro-dir-novo"></div>
       <div class="sucesso hidden" id="sucesso-dir-novo"></div>
 
@@ -924,6 +937,17 @@
         </div>
       </div>
 
+      <div class="campo" style="margin-top:10px; border-top:1px dashed var(--rule); padding-top:14px;">
+        <label for="dir-edit-resp-nome">Nome do Responsável (Tutoria)</label>
+        <input type="text" id="dir-edit-resp-nome" placeholder="Nome do pai/mãe/responsável">
+      </div>
+
+      <div class="campo">
+        <label for="dir-edit-resp-tel">Telefone do Responsável (vínculo do Portal dos Pais)</label>
+        <input type="tel" id="dir-edit-resp-tel" placeholder="(11) 99999-9999">
+        <p style="font-size:11px; color:var(--paper-shadow); margin:4px 2px 0;">É este telefone que o responsável deve usar para entrar direto no boletim do(a) aluno(a).</p>
+      </div>
+
       <div class="erro" id="erro-dir-edit"></div>
       <div class="sucesso hidden" id="sucesso-dir-edit"></div>
 
@@ -946,55 +970,102 @@
 
   const LISTA_MATERIAS = ["Artes", "Biologia", "Ciências", "Educação Física", "Física", "Geografia", "História", "Inglês", "Matemática", "Português", "Química"];
 
-  function resetarBanco() {
-      if(confirm("Tem certeza que deseja resetar todo o banco de dados para a configuração padrão?")) {
-          localStorage.removeItem('banco_usuarios');
-          inicializarBanco();
-          alert("Banco de dados resetado com sucesso!");
-          location.reload();
-      }
-  }
+  // ===== SINCRONIZAÇÃO COM O SERVIDOR (substitui o localStorage) =====
+  const API_URL = '/api/alunos';
+  let bancoCache = [];
+  let bancoCarregado = false;
 
-  function inicializarBanco() {
-    let banco = localStorage.getItem('banco_usuarios');
-    if (!banco) {
-      const ALUNOS_DB_INICIAL = [
-        {
-          nome:"Ana Clara Silva",ra:"1000202400011",digito:"1",turma:"6A",
-          materias: {
-            "Matemática": [8.5, 7.0, 9.0, 8.0],
-            "Português": [6.0, 8.0, 7.5, 9.0],
-            "História": [9.0, 9.5, 8.0, 10.0]
-          }
-        },
-        {nome:"Arthur Santos Lima",ra:"1000202400012",digito:"2",turma:"6A",materias:{}},
-        {nome:"João Pedro Carvalho",ra:"1000202400021",digito:"1",turma:"6B",materias:{}},
-        {nome:"Alice Monteiro",ra:"1000202400031",digito:"1",turma:"7A",materias:{}},
-        {nome:"Miguel Ângelo",ra:"1000202400041",digito:"1",turma:"7B",materias:{}},
-        {nome:"André Luiz Soares",ra:"1000202400051",digito:"1",turma:"8A",materias:{}},
-        {nome:"Kauan Felipe",ra:"1000202400061",digito:"1",turma:"8B",materias:{}},
-        {nome:"Alan Kardec",ra:"1000202400071",digito:"1",turma:"9A",materias:{}},
-        {nome:"Marcos Paulo",ra:"1000202400081",digito:"1",turma:"9B",materias:{}},
-        {nome:"Alice Paulino",ra:"1000202400091",digito:"1",turma:"1A",materias:{}},
-        {nome:"Karen Junqueira",ra:"1000202400101",digito:"1",turma:"1B",materias:{}},
-        {nome:"Ulisses Campbell",ra:"1000202400111",digito:"1",turma:"1C",materias:{}},
-        {nome:"Elaine Mickely",ra:"1000202400121",digito:"1",turma:"2A",materias:{}},
-        {nome:"Otaviano Costa",ra:"1000202400131",digito:"1",turma:"2B",materias:{}},
-        {nome:"Alexandre Frota",ra:"1000202400141",digito:"1",turma:"3A-TECNICO",materias:{}},
-        {nome:"Klebber Toledo",ra:"1000202400151",digito:"1",turma:"3B-REGULAR",materias:{}}
-      ];
-      localStorage.setItem('banco_usuarios', JSON.stringify(ALUNOS_DB_INICIAL));
+  const ALUNOS_DB_INICIAL = [
+    {
+      nome:"Ana Clara Silva",ra:"1000202400011",digito:"1",turma:"6A",
+      materias: {
+        "Matemática": [8.5, 7.0, 9.0, 8.0],
+        "Português": [6.0, 8.0, 7.5, 9.0],
+        "História": [9.0, 9.5, 8.0, 10.0]
+      }
+    },
+    {nome:"Arthur Santos Lima",ra:"1000202400012",digito:"2",turma:"6A",materias:{}},
+    {nome:"João Pedro Carvalho",ra:"1000202400021",digito:"1",turma:"6B",materias:{}},
+    {nome:"Alice Monteiro",ra:"1000202400031",digito:"1",turma:"7A",materias:{}},
+    {nome:"Miguel Ângelo",ra:"1000202400041",digito:"1",turma:"7B",materias:{}},
+    {nome:"André Luiz Soares",ra:"1000202400051",digito:"1",turma:"8A",materias:{}},
+    {nome:"Kauan Felipe",ra:"1000202400061",digito:"1",turma:"8B",materias:{}},
+    {nome:"Alan Kardec",ra:"1000202400071",digito:"1",turma:"9A",materias:{}},
+    {nome:"Marcos Paulo",ra:"1000202400081",digito:"1",turma:"9B",materias:{}},
+    {nome:"Alice Paulino",ra:"1000202400091",digito:"1",turma:"1A",materias:{}},
+    {nome:"Karen Junqueira",ra:"1000202400101",digito:"1",turma:"1B",materias:{}},
+    {nome:"Ulisses Campbell",ra:"1000202400111",digito:"1",turma:"1C",materias:{}},
+    {nome:"Elaine Mickely",ra:"1000202400121",digito:"1",turma:"2A",materias:{}},
+    {nome:"Otaviano Costa",ra:"1000202400131",digito:"1",turma:"2B",materias:{}},
+    {nome:"Alexandre Frota",ra:"1000202400141",digito:"1",turma:"3A-TECNICO",materias:{}},
+    {nome:"Klebber Toledo",ra:"1000202400151",digito:"1",turma:"3B-REGULAR",materias:{}}
+  ];
+
+  async function salvarBanco(banco) {
+    bancoCache = banco;
+    try {
+      await fetch(API_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(banco)
+      });
+    } catch (e) {
+      console.error('Falha ao salvar no servidor:', e);
+      alert('Não foi possível salvar no servidor. Verifique sua conexão com a internet.');
     }
   }
-  inicializarBanco();
+
+  async function carregarBancoDoServidor() {
+    try {
+      const resp = await fetch(API_URL);
+      if (resp.ok) {
+        const dados = await resp.json();
+        bancoCache = (dados && dados.length) ? dados : ALUNOS_DB_INICIAL;
+        if (!dados || !dados.length) await salvarBanco(bancoCache);
+      } else {
+        bancoCache = ALUNOS_DB_INICIAL;
+      }
+    } catch (e) {
+      console.error('Falha ao carregar dados do servidor, usando padrão local:', e);
+      bancoCache = ALUNOS_DB_INICIAL;
+    }
+    bancoCarregado = true;
+    const overlay = document.getElementById('overlay-carregando');
+    if (overlay) overlay.remove();
+  }
+  carregarBancoDoServidor();
+
+  // Sincroniza com o servidor periodicamente para refletir alterações feitas por outras pessoas
+  setInterval(async () => {
+    try {
+      const resp = await fetch(API_URL);
+      if (resp.ok) {
+        const dados = await resp.json();
+        if (dados && dados.length) bancoCache = dados;
+      }
+    } catch (e) { /* silencioso: mantém os dados que já estão em cache */ }
+  }, 15000);
+
+  async function resetarBanco() {
+    if(confirm("Tem certeza que deseja resetar todo o banco de dados para a configuração padrão?")) {
+      await salvarBanco(ALUNOS_DB_INICIAL.map(a => ({...a})));
+      alert("Banco de dados resetado com sucesso!");
+      location.reload();
+    }
+  }
 
   function obterBancoUsuarios() {
-    return JSON.parse(localStorage.getItem('banco_usuarios')) || [];
+    return bancoCache;
+  }
+
+  // Normaliza telefone deixando apenas dígitos, para comparar sem depender de máscara/formatação
+  function normalizarTelefone(tel) {
+    return (tel || "").replace(/\D/g, "");
   }
 
   // ESTADOS GLOBAIS DE SESSÃO
   const estadoAluno = { nome:"", ra:"", digito:"", turma:"", materia:"", notas:[] };
-  const estadoPais = { nome:"", telefone:"", filhoSelecionado: null };
+  const estadoPais = { nome:"", telefone:"", filhoSelecionado: null, filhosVinculados: [] };
   const estadoProf = { nome:"", alunoSelecionado: null, materiaSelecionada: "" };
   const estadoDir = { nome:"", alunoSelecionado: null };
 
@@ -1151,7 +1222,8 @@
   // ==========================================
   document.getElementById('btn-login-pais').addEventListener('click', () => {
     const nome = document.getElementById('pais-nome').value.trim();
-    const tel = document.getElementById('pais-telefone').value.trim();
+    const telOriginal = document.getElementById('pais-telefone').value.trim();
+    const tel = normalizarTelefone(telOriginal);
     const senha = document.getElementById('pais-senha').value;
     const erro = document.getElementById('erro-pais-login');
     erro.textContent = "";
@@ -1161,34 +1233,52 @@
     if(!senha){ erro.textContent = "Digite uma senha para acessar."; return; }
 
     estadoPais.nome = nome;
-    estadoPais.telefone = tel;
-    document.getElementById('pais-boas-vindas').textContent = `Bem-vindo(a), ${nome}. Pesquise seu filho(a) abaixo.`;
+    estadoPais.telefone = telOriginal;
 
-    carregarBuscaFilhos("");
+    // Busca automaticamente os alunos vinculados a este telefone de responsável
+    // (vínculo feito pelo professor/tutoria na Gestão de Turmas)
+    const banco = obterBancoUsuarios();
+    const filhosVinculados = banco.filter(u => u.responsavelTelefone && u.responsavelTelefone === tel);
+    estadoPais.filhosVinculados = filhosVinculados;
+
+    if(filhosVinculados.length === 0) {
+      erro.textContent = "Nenhum aluno vinculado a este telefone ainda. Procure a coordenação/tutoria da escola para vincular seu cadastro ao(à) aluno(a).";
+      return;
+    }
+
+    if(filhosVinculados.length === 1) {
+      // Só tem um filho vinculado: vai direto para o boletim, sem tela de busca
+      verBoletimPai(filhosVinculados[0].ra);
+      return;
+    }
+
+    // Mais de um filho vinculado ao mesmo telefone (irmãos): mostra a lista para escolher
+    document.getElementById('pais-boas-vindas').textContent = `Bem-vindo(a), ${nome}. Selecione o(a) filho(a):`;
+    document.getElementById('pais-filtro-wrap').style.display = filhosVinculados.length > 3 ? '' : 'none';
+    carregarFilhosVinculados("");
     mostrarTela('pais-busca');
   });
 
   document.getElementById('btn-pais-buscar').addEventListener('click', () => {
     const termo = document.getElementById('pais-busca-input').value.trim();
-    carregarBuscaFilhos(termo);
+    carregarFilhosVinculados(termo);
   });
 
-  function carregarBuscaFilhos(termo) {
-    const banco = obterBancoUsuarios();
+  function carregarFilhosVinculados(termo) {
     const corpo = document.getElementById('pais-filhos-corpo');
     corpo.innerHTML = "";
 
-    const filtrados = banco.filter(u => 
-      u.nome.toLowerCase().includes(termo.toLowerCase()) || 
+    const lista = (estadoPais.filhosVinculados || []).filter(u =>
+      u.nome.toLowerCase().includes(termo.toLowerCase()) ||
       u.ra.includes(termo)
     );
 
-    if(filtrados.length === 0) {
-      corpo.innerHTML = `<tr><td colspan="4" class="vazio-tabela">Nenhum aluno encontrado com esses dados.</td></tr>`;
+    if(lista.length === 0) {
+      corpo.innerHTML = `<tr><td colspan="4" class="vazio-tabela">Nenhum filho encontrado com esses dados.</td></tr>`;
       return;
     }
 
-    filtrados.forEach(aluno => {
+    lista.forEach(aluno => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${aluno.turma || "S/T"}</td>
@@ -1207,6 +1297,18 @@
 
     estadoPais.filhoSelecionado = aluno;
     document.getElementById('pais-filho-nome').textContent = `${aluno.nome} (${aluno.turma || "Sem Turma"}) — RA: ${aluno.ra}`;
+
+    // Se o responsável só tem um filho vinculado, o botão "voltar" sai do portal;
+    // se tiver mais de um (irmãos), volta para a lista de seleção.
+    const temVariosFilhos = (estadoPais.filhosVinculados || []).length > 1;
+    const btnVoltar = document.getElementById('btn-pais-voltar');
+    if(temVariosFilhos) {
+      btnVoltar.textContent = "← Voltar para Meus Filhos";
+      btnVoltar.onclick = () => mostrarTela('pais-busca');
+    } else {
+      btnVoltar.textContent = "← Sair do Portal dos Pais";
+      btnVoltar.onclick = () => trocarPerfil('pais');
+    }
 
     const corpo = document.getElementById('pais-boletim-corpo');
     corpo.innerHTML = "";
@@ -1316,7 +1418,7 @@
       if(idx >= 0){
           if(!banco[idx].materias) banco[idx].materias = {};
           banco[idx].materias[estadoProf.materiaSelecionada] = notas;
-          localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+          salvarBanco(banco);
           estadoProf.alunoSelecionado = banco[idx];
           sucessoEl.classList.remove('hidden');
       }
@@ -1493,10 +1595,14 @@
 
     filtrados.forEach(aluno => {
       const tr = document.createElement('tr');
+      const respTexto = aluno.responsavelTelefone
+        ? `${aluno.responsavelNome || "Responsável"}<br><span style="opacity:0.7; font-size:11px;">${aluno.responsavelTelefone}</span>`
+        : `<span style="opacity:0.55; font-style:italic;">Não vinculado</span>`;
       tr.innerHTML = `
         <td style="color:var(--pen-blue); font-weight:bold">${aluno.turma || "S/T"}</td>
         <td>${aluno.nome}</td>
         <td>${aluno.ra}</td>
+        <td>${respTexto}</td>
       `;
 
       const tdAcoes = document.createElement('td');
@@ -1523,7 +1629,7 @@
   function excluirAluno(ra, nome) {
     if(confirm(`Deseja excluir o aluno ${nome} (RA: ${ra}) do sistema?`)) {
       let banco = obterBancoUsuarios().filter(u => u.ra !== ra);
-      localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+      salvarBanco(banco);
       carregarTabelaDiretor(document.getElementById('dir-turma-select').value);
     }
   }
@@ -1573,14 +1679,19 @@
     let banco = obterBancoUsuarios();
     if(banco.some(u => u.ra === ra)){ erro.textContent = "Já existe aluno com este RA."; return; }
 
-    banco.push({ nome, ra, digito, turma, materias: {} });
-    localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+    const respNome = document.getElementById('dir-novo-resp-nome').value.trim();
+    const respTel = normalizarTelefone(document.getElementById('dir-novo-resp-tel').value);
+
+    banco.push({ nome, ra, digito, turma, materias: {}, responsavelNome: respNome, responsavelTelefone: respTel });
+    salvarBanco(banco);
 
     sucesso.textContent = `Aluno ${nome} cadastrado!`;
     sucesso.classList.remove('hidden');
     document.getElementById('dir-novo-nome').value = "";
     document.getElementById('dir-novo-ra').value = "";
     document.getElementById('dir-novo-digito').value = "";
+    document.getElementById('dir-novo-resp-nome').value = "";
+    document.getElementById('dir-novo-resp-tel').value = "";
   });
 
   function abrirEditDir(aluno) {
@@ -1589,6 +1700,8 @@
     document.getElementById('dir-edit-nome').value = aluno.nome;
     document.getElementById('dir-edit-ra').value = aluno.ra;
     document.getElementById('dir-edit-digito').value = aluno.digito;
+    document.getElementById('dir-edit-resp-nome').value = aluno.responsavelNome || "";
+    document.getElementById('dir-edit-resp-tel').value = aluno.responsavelTelefone || "";
     document.getElementById('erro-dir-edit').textContent = "";
     document.getElementById('sucesso-dir-edit').classList.add('hidden');
     mostrarTela('dir-edit-aluno');
@@ -1602,14 +1715,20 @@
 
     if(!nome || !ra || !digito){ erro.textContent = "Preencha todos os campos."; return; }
 
+    const respNome = document.getElementById('dir-edit-resp-nome').value.trim();
+    const respTel = normalizarTelefone(document.getElementById('dir-edit-resp-tel').value);
+
     let banco = obterBancoUsuarios();
     const idx = banco.findIndex(u => u.ra === estadoDir.alunoSelecionado.ra);
     if(idx >= 0) {
       banco[idx].nome = nome;
       banco[idx].ra = ra;
       banco[idx].digito = digito;
-      localStorage.setItem('banco_usuarios', JSON.stringify(banco));
-      document.getElementById('sucesso-dir-edit').textContent = "Dados atualizados!";
+      banco[idx].responsavelNome = respNome;
+      banco[idx].responsavelTelefone = respTel;
+      salvarBanco(banco);
+      estadoDir.alunoSelecionado = banco[idx];
+      document.getElementById('sucesso-dir-edit').textContent = respTel ? "Dados atualizados e responsável vinculado!" : "Dados atualizados!";
       document.getElementById('sucesso-dir-edit').classList.remove('hidden');
     }
   });
