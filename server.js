@@ -42,9 +42,9 @@ app.put('/api/alunos', (req, res) => {
   }
 });
 
-// Qualquer outra rota cai no site (fallback simples)
+// Qualquer outra rota cai no portal unificado (fallback simples)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'tutoria.html'));
+  res.sendFile(path.join(__dirname, 'public', 'PORTAL_UNIFICADO.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
