@@ -601,4 +601,1071 @@
       <div class="campo" id="pais-filtro-wrap" style="display:none;">
         <label for="pais-busca-input">Filtrar por nome ou RA</label>
         <div class="busca-box">
-          <input t
+          <input type="text" id="pais-busca-input" placeholder="Digite o nome do aluno ou RA..." style="margin-bottom:0;">
+          <button class="btn" type="button" id="btn-pais-buscar" style="width:100px; padding:10px; margin-top:0;">Buscar</button>
+        </div>
+      </div>
+
+      <div class="tabela-scroll">
+        <table class="boletim-table">
+          <thead>
+            <tr>
+              <th>Turma</th>
+              <th>Nome do Aluno</th>
+              <th>RA</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="pais-filhos-corpo"></tbody>
+        </table>
+      </div>
+
+      <button class="btn btn-ghost" type="button" onclick="trocarPerfil('pais')">← Sair do Portal dos Pais</button>
+    </div>
+
+    <div class="panel hidden" id="tela-pais-boletim">
+      <p class="saudacao">Boletim Escolar do Filho</p>
+      <p class="resultado-nome" id="pais-filho-nome"></p>
+      <p class="sub" style="text-align:center; margin-top:-14px;">Média anual completa por matéria</p>
+
+      <div class="tabela-scroll">
+        <table class="boletim-table">
+          <thead>
+            <tr>
+              <th>Matéria</th>
+              <th class="num">1º B</th>
+              <th class="num">2º B</th>
+              <th class="num">3º B</th>
+              <th class="num">4º B</th>
+              <th class="num">Média</th>
+            </tr>
+          </thead>
+          <tbody id="pais-boletim-corpo"></tbody>
+        </table>
+      </div>
+
+      <a id="link-whatsapp-prof" target="_blank" style="text-decoration: none;">
+        <button class="btn btn-green" type="button" style="margin-bottom:10px;">📱 Falar com a Escola / Professores</button>
+      </a>
+
+      <button class="btn btn-ghost" type="button" id="btn-pais-voltar" onclick="mostrarTela('pais-busca')">← Voltar para Meus Filhos</button>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- 3. ÁREA UNIFICADA DO PROFESSOR E TUTORIA       -->
+    <!-- ============================================== -->
+    <div class="panel hidden" id="tela-prof-login">
+      <p class="saudacao">Portal do Professor & Tutoria</p>
+      <p class="sub">Acesso para lançamento de notas, gestão de turmas e emissão de boletins.</p>
+      <div class="campo">
+        <label for="prof-nome">Nome do Usuário</label>
+        <input type="text" id="prof-nome" placeholder="Seu nome">
+      </div>
+      <div class="campo">
+        <label for="prof-senha">Senha</label>
+        <input type="password" id="prof-senha" autocomplete="off" placeholder="Senha de Acesso">
+      </div>
+      <div class="erro" id="erro-prof-login"></div>
+      <button class="btn" type="button" id="btn-login-prof">Entrar no Portal →</button>
+    </div>
+
+    <div class="panel hidden" id="tela-prof-alunos">
+      <p class="saudacao">Alunos Cadastrados</p>
+      <p class="sub" id="prof-boas-vindas"></p>
+      
+      <!-- Botão para alternar para a Gestão de Turmas / Tutoria -->
+      <button class="btn btn-green" type="button" style="margin-bottom:15px;" onclick="mostrarTela('dir-turmas')">📋 Ir para Gestão de Turmas & Tutoria</button>
+
+      <div class="tabela-scroll">
+        <table class="boletim-table">
+          <thead><tr><th>Nome</th><th>Turma</th><th>Ações</th></tr></thead>
+          <tbody id="prof-alunos-corpo"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-ghost" type="button" onclick="trocarPerfil('professor')">← Sair</button>
+    </div>
+
+    <div class="panel hidden" id="tela-prof-materia">
+      <p class="saudacao">Ações para o Aluno</p>
+      <div class="aluno-selecionado-box">
+        <p class="aluno-selecionado-texto" id="prof-aluno-selecionado-texto"></p>
+      </div>
+
+      <button class="btn btn-pdf" type="button" onclick="abrirOpcoesPDFProfessor()">📄 Gerar PDF de Notas/Boletim</button>
+      <hr style="margin:20px 0; border:0; border-top:1px dashed var(--rule);">
+
+      <p class="sub">Ou selecione uma matéria para lançar notas:</p>
+      <div class="campo">
+        <label for="prof-materia-select">Matéria</label>
+        <select id="prof-materia-select">
+          <option value="">Selecione...</option>
+          <option value="Artes">Artes</option>
+          <option value="Biologia">Biologia</option>
+          <option value="Ciências">Ciências</option>
+          <option value="Educação Física">Educação Física</option>
+          <option value="Física">Física</option>
+          <option value="Geografia">Geografia</option>
+          <option value="História">História</option>
+          <option value="Inglês">Inglês</option>
+          <option value="Matemática">Matemática</option>
+          <option value="Português">Português</option>
+          <option value="Química">Química</option>
+        </select>
+      </div>
+      <div class="erro" id="erro-prof-materia"></div>
+      <button class="btn" type="button" id="btn-prof-materia-continuar">Lançar Notas →</button>
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-alunos')">← Voltar</button>
+    </div>
+
+    <div class="panel hidden" id="tela-prof-notas">
+      <p class="saudacao">Lançamento de Notas</p>
+      <p class="sub" id="prof-sub-notas"></p>
+      <div class="grade-row"><label>1º Bimestre</label><input type="number" id="prof-nota1" min="0" max="10" step="0.1"></div>
+      <div class="grade-row"><label>2º Bimestre</label><input type="number" id="prof-nota2" min="0" max="10" step="0.1"></div>
+      <div class="grade-row"><label>3º Bimestre</label><input type="number" id="prof-nota3" min="0" max="10" step="0.1"></div>
+      <div class="grade-row"><label>4º Bimestre</label><input type="number" id="prof-nota4" min="0" max="10" step="0.1"></div>
+      <div class="erro" id="erro-prof-notas"></div>
+      <div class="sucesso hidden" id="sucesso-prof-notas">Notas salvas com sucesso!</div>
+      <button class="btn btn-green" type="button" id="btn-salvar-notas-prof">Salvar Notas</button>
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-materia')">← Voltar</button>
+    </div>
+
+    <!-- TELA PARA PROFESSOR CONFIGURAR E IMPRIMIR O PDF -->
+    <div class="panel hidden" id="tela-prof-pdf">
+      <p class="saudacao">Exportação em PDF</p>
+      <p class="resultado-nome" id="pdf-prof-aluno-nome"></p>
+
+      <div class="campo" style="margin: 15px 0;">
+        <label for="select-tipo-pdf"><strong>Selecione o relatório a ser impresso:</strong></label>
+        <select id="select-tipo-pdf" onchange="atualizarPreviewPDF()">
+          <option value="TODOS">Boletim Completo (1º ao 4º Bimestre + Média Final)</option>
+          <option value="0">Notas do 1º Bimestre</option>
+          <option value="1">Notas do 2º Bimestre</option>
+          <option value="2">Notas do 3º Bimestre</option>
+          <option value="3">Notas do 4º Bimestre</option>
+        </select>
+      </div>
+
+      <button class="btn btn-pdf" type="button" id="btn-gerar-pdf-prof" onclick="executarDownloadPDF()">📄 Baixar Arquivo PDF Agora</button>
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-materia')">← Voltar</button>
+
+      <div style="margin-top:20px;">
+        <p class="sub" style="margin-bottom:6px;">Pré-visualização do Relatório:</p>
+        <div id="area-impressao-pdf">
+          <div style="text-align:center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="margin:0; font-size:18px; color:#111;">CONECTE ESCOLA — BOLETIM OFICIAL</h3>
+            <p style="margin:2px 0; font-size:12px; color:#555;">Documento Digital do Aluno</p>
+          </div>
+
+          <p style="margin:4px 0; font-size:13px; color:#111;"><strong>Aluno(a):</strong> <span id="pdf-preview-nome"></span></p>
+          <p style="margin:4px 0; font-size:13px; color:#111;"><strong>RA:</strong> <span id="pdf-preview-ra"></span> | <strong>Turma:</strong> <span id="pdf-preview-turma"></span></p>
+
+          <table class="boletim-table" id="tabela-pdf-preview" style="margin-top:15px; color:#000;">
+            <!-- Gerado Dinamicamente -->
+          </table>
+
+          <div style="margin-top: 25px; text-align: right; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 8px;">
+            Relatório expedido digitalmente pelo corpo docente.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- 4. ÁREA DA TUTORIA (DENTRO DO PORTAL UNIFICADO)-->
+    <!-- ============================================== -->
+    <div class="panel hidden" id="tela-dir-login">
+      <p class="saudacao">Portal da Tutoria</p>
+      <p class="sub">Acesso exclusivo para Tutoria Escolar.</p>
+      <div class="campo">
+        <label for="dir-nome">Usuário Tutor</label>
+        <input type="text" id="dir-nome" placeholder="Ex: Tutor">
+      </div>
+      <div class="campo">
+        <label for="dir-senha">Senha da Tutoria</label>
+        <input type="password" id="dir-senha" autocomplete="off" placeholder="Digite a senha">
+      </div>
+      <div class="erro" id="erro-dir-login"></div>
+      <button class="btn" style="background-color: var(--pen-red);" type="button" id="btn-login-dir">Acessar Sistema →</button>
+    </div>
+
+    <div class="panel hidden" id="tela-dir-turmas">
+      <p class="saudacao">Gestão de Turmas & Tutoria</p>
+      <p class="sub" id="dir-boas-vindas">Selecione uma turma ou adicione/edite alunos.</p>
+      
+      <div class="campo" style="margin-bottom: 16px;">
+        <label for="dir-turma-select">Filtro de Turma</label>
+        <select id="dir-turma-select">
+          <option value="TODAS">--- Todas as Turmas ---</option>
+          <option value="6A">6º Ano A (6A)</option>
+          <option value="6B">6º Ano B (6B)</option>
+          <option value="7A">7º Ano A (7A)</option>
+          <option value="7B">7º Ano B (7B)</option>
+          <option value="8A">8º Ano A (8A)</option>
+          <option value="8B">8º Ano B (8B)</option>
+          <option value="9A">9º Ano A (9A)</option>
+          <option value="9B">9º Ano B (9B)</option>
+          <option value="1A">1º Ano E.M. A (1A)</option>
+          <option value="1B">1º Ano E.M. B (1B)</option>
+          <option value="1C">1º Ano E.M. C (1C)</option>
+          <option value="2A">2º Ano E.M. A (2A)</option>
+          <option value="2B">2º Ano E.M. B (2B)</option>
+          <option value="3A-TECNICO">3º Ano Técnico (3A-TECNICO)</option>
+          <option value="3B-REGULAR">3º Ano Regular (3B-REGULAR)</option>
+          <option value="SEM-TURMA">Alunos Avulsos (Sem turma)</option>
+        </select>
+      </div>
+
+      <button class="btn" type="button" onclick="mostrarTela('dir-add-aluno')">➕ Adicionar Novo Aluno</button>
+
+      <div class="tabela-scroll">
+        <table class="boletim-table">
+          <thead>
+            <tr>
+              <th>Turma</th>
+              <th>Nome</th>
+              <th>RA</th>
+              <th>Responsável</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="dir-turmas-corpo"></tbody>
+        </table>
+      </div>
+
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-alunos')">← Voltar para Lista de Alunos (Prof)</button>
+    </div>
+
+    <div class="panel hidden" id="tela-dir-boletim">
+      <p class="saudacao">Ficha Geral do Aluno</p>
+      <p class="resultado-nome" id="dir-boletim-nome"></p>
+      <p class="sub" style="text-align:center; margin-top:-14px;">Média anual por matéria</p>
+      
+      <div class="tabela-scroll">
+        <table class="boletim-table">
+          <thead>
+            <tr>
+              <th>Matéria</th>
+              <th class="num">B1</th>
+              <th class="num">B2</th>
+              <th class="num">B3</th>
+              <th class="num">B4</th>
+              <th class="num">Média</th>
+            </tr>
+          </thead>
+          <tbody id="dir-boletim-corpo"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('dir-turmas')">← Voltar para Turmas</button>
+    </div>
+
+    <div class="panel hidden" id="tela-dir-add-aluno">
+      <p class="saudacao">Adicionar Novo Aluno</p>
+      <p class="sub">Cadastre um novo aluno no banco de dados da escola.</p>
+
+      <div class="campo">
+        <label for="dir-novo-turma">Turma</label>
+        <select id="dir-novo-turma">
+          <option value="">Selecione a turma...</option>
+          <option value="6A">6º Ano A (6A)</option>
+          <option value="6B">6º Ano B (6B)</option>
+          <option value="7A">7º Ano A (7A)</option>
+          <option value="7B">7º Ano B (7B)</option>
+          <option value="8A">8º Ano A (8A)</option>
+          <option value="8B">8º Ano B (8B)</option>
+          <option value="9A">9º Ano A (9A)</option>
+          <option value="9B">9º Ano B (9B)</option>
+          <option value="1A">1º Ano E.M. A (1A)</option>
+          <option value="1B">1º Ano E.M. B (1B)</option>
+          <option value="1C">1º Ano E.M. C (1C)</option>
+          <option value="2A">2º Ano E.M. A (2A)</option>
+          <option value="2B">2º Ano E.M. B (2B)</option>
+          <option value="3A-TECNICO">3º Ano Técnico (3A-TECNICO)</option>
+          <option value="3B-REGULAR">3º Ano Regular (3B-REGULAR)</option>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="dir-novo-nome">Nome Completo</label>
+        <input type="text" id="dir-novo-nome" placeholder="Nome completo do aluno">
+      </div>
+
+      <div class="campo">
+        <label>RA e Dígito</label>
+        <div class="ra-group">
+          <input type="text" id="dir-novo-ra" inputmode="numeric" maxlength="13" placeholder="RA (13 números)">
+          <input type="text" id="dir-novo-digito" inputmode="numeric" maxlength="2" placeholder="Dígito">
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="dir-novo-resp-nome">Nome do Responsável (opcional)</label>
+        <input type="text" id="dir-novo-resp-nome" placeholder="Nome do pai/mãe/responsável">
+      </div>
+
+      <div class="campo">
+        <label for="dir-novo-resp-tel">Telefone do Responsável (para vínculo do Portal dos Pais)</label>
+        <input type="tel" id="dir-novo-resp-tel" placeholder="(11) 99999-9999">
+      </div>
+
+      <div class="erro" id="erro-dir-novo"></div>
+      <div class="sucesso hidden" id="sucesso-dir-novo"></div>
+
+      <button class="btn btn-green" type="button" id="btn-salvar-novo-aluno">Cadastrar Aluno</button>
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('dir-turmas')">← Voltar para Turmas</button>
+    </div>
+
+    <div class="panel hidden" id="tela-dir-edit-aluno">
+      <p class="saudacao">Editar Aluno</p>
+      <p class="sub">Corrija o nome, o RA ou o dígito do aluno selecionado.</p>
+
+      <div class="aluno-selecionado-box">
+        <p class="aluno-selecionado-texto" id="dir-edit-turma-texto"></p>
+      </div>
+
+      <div class="campo">
+        <label for="dir-edit-nome">Nome Completo</label>
+        <input type="text" id="dir-edit-nome" placeholder="Nome completo do aluno">
+      </div>
+
+      <div class="campo">
+        <label>RA e Dígito</label>
+        <div class="ra-group">
+          <input type="text" id="dir-edit-ra" inputmode="numeric" maxlength="13" placeholder="RA (13 números)">
+          <input type="text" id="dir-edit-digito" inputmode="numeric" maxlength="2" placeholder="Dígito">
+        </div>
+      </div>
+
+      <div class="campo" style="margin-top:10px; border-top:1px dashed var(--rule); padding-top:14px;">
+        <label for="dir-edit-resp-nome">Nome do Responsável (Tutoria)</label>
+        <input type="text" id="dir-edit-resp-nome" placeholder="Nome do pai/mãe/responsável">
+      </div>
+
+      <div class="campo">
+        <label for="dir-edit-resp-tel">Telefone do Responsável (vínculo do Portal dos Pais)</label>
+        <input type="tel" id="dir-edit-resp-tel" placeholder="(11) 99999-9999">
+        <p style="font-size:11px; color:var(--paper-shadow); margin:4px 2px 0;">É este telefone que o responsável deve usar para entrar direto no boletim do(a) aluno(a).</p>
+      </div>
+
+      <div class="erro" id="erro-dir-edit"></div>
+      <div class="sucesso hidden" id="sucesso-dir-edit"></div>
+
+      <button class="btn btn-green" type="button" id="btn-salvar-edit-aluno">Salvar Alterações</button>
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('dir-turmas')">← Voltar para Turmas</button>
+    </div>
+
+  </div>
+  <footer class="credit">
+      — @todos os direitos reservados a nthony e felipe dias —<br>
+      <span class="reset-link" onclick="resetarBanco()">Limpar Sistema (Resetar Banco)</span>
+  </footer>
+</div>
+
+<script>
+  // SENHAS DO SISTEMA
+  const SENHA_ALUNO = "@Josetalarico1";
+  const SENHA_PROFESSOR = "@Professor2026";
+  const SENHA_DIRETOR = "@Diretor2026"; 
+
+  const LISTA_MATERIAS = ["Artes", "Biologia", "Ciências", "Educação Física", "Física", "Geografia", "História", "Inglês", "Matemática", "Português", "Química"];
+
+  function resetarBanco() {
+      if(confirm("Tem certeza que deseja resetar todo o banco de dados para a configuração padrão?")) {
+          localStorage.removeItem('banco_usuarios');
+          inicializarBanco();
+          alert("Banco de dados resetado com sucesso!");
+          location.reload();
+      }
+  }
+
+  function inicializarBanco() {
+    let banco = localStorage.getItem('banco_usuarios');
+    if (!banco) {
+      const ALUNOS_DB_INICIAL = [];
+      localStorage.setItem('banco_usuarios', JSON.stringify(ALUNOS_DB_INICIAL));
+    }
+  }
+  inicializarBanco();
+
+  function obterBancoUsuarios() {
+    return JSON.parse(localStorage.getItem('banco_usuarios')) || [];
+  }
+
+  // Normaliza telefone deixando apenas dígitos, para comparar sem depender de máscara/formatação
+  function normalizarTelefone(tel) {
+    return (tel || "").replace(/\D/g, "");
+  }
+
+  // ESTADOS GLOBAIS DE SESSÃO
+  const estadoAluno = { nome:"", ra:"", digito:"", turma:"", materia:"", notas:[] };
+  const estadoPais = { nome:"", telefone:"", filhoSelecionado: null, filhosVinculados: [] };
+  const estadoProf = { nome:"", alunoSelecionado: null, materiaSelecionada: "" };
+  const estadoDir = { nome:"", alunoSelecionado: null };
+
+  const telas = {
+    'aluno-login': document.getElementById('tela-aluno-login'),
+    'aluno-materia': document.getElementById('tela-aluno-materia'),
+    'aluno-boletim': document.getElementById('tela-aluno-boletim'),
+    
+    'pais-login': document.getElementById('tela-pais-login'),
+    'pais-busca': document.getElementById('tela-pais-busca'),
+    'pais-boletim': document.getElementById('tela-pais-boletim'),
+
+    'prof-login': document.getElementById('tela-prof-login'),
+    'prof-alunos': document.getElementById('tela-prof-alunos'),
+    'prof-materia': document.getElementById('tela-prof-materia'),
+    'prof-notas': document.getElementById('tela-prof-notas'),
+    'prof-pdf': document.getElementById('tela-prof-pdf'),
+
+    'dir-login': document.getElementById('tela-dir-login'),
+    'dir-turmas': document.getElementById('tela-dir-turmas'),
+    'dir-boletim': document.getElementById('tela-dir-boletim'),
+    'dir-add-aluno': document.getElementById('tela-dir-add-aluno'),
+    'dir-edit-aluno': document.getElementById('tela-dir-edit-aluno')
+  };
+
+  const ordemEtapas = {
+    'aluno': ['aluno-login', 'aluno-materia', 'aluno-boletim'],
+    'pais': ['pais-login', 'pais-busca', 'pais-boletim'],
+    'prof': ['prof-login', 'prof-alunos', 'dir-turmas', 'prof-materia', 'prof-notas', 'prof-pdf'],
+    'tutoria': ['dir-login', 'dir-turmas', 'dir-boletim', 'dir-add-aluno', 'dir-edit-aluno']
+  };
+
+  let perfilAtual = 'aluno';
+
+  function trocarPerfil(perfil) {
+    perfilAtual = perfil;
+    document.querySelectorAll('.profile-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if(perfil === 'aluno') {
+      document.querySelectorAll('.profile-btn')[0].classList.add('active');
+      mostrarTela('aluno-login');
+    } else if(perfil === 'pais') {
+      document.querySelectorAll('.profile-btn')[1].classList.add('active');
+      mostrarTela('pais-login');
+    } else if(perfil === 'professor') {
+      document.querySelectorAll('.profile-btn')[2].classList.add('active');
+      mostrarTela('prof-login');
+    } else if(perfil === 'tutoria') {
+      document.querySelectorAll('.profile-btn')[2].classList.add('active');
+      mostrarTela('prof-login');
+    }
+  }
+
+  function mostrarTela(nomeTela){
+    Object.values(telas).forEach(t => t.classList.add('hidden'));
+    if(telas[nomeTela]) telas[nomeTela].classList.remove('hidden');
+
+    document.getElementById('steps-aluno').classList.toggle('hidden', perfilAtual !== 'aluno');
+    document.getElementById('steps-pais').classList.toggle('hidden', perfilAtual !== 'pais');
+    document.getElementById('steps-professor').classList.toggle('hidden', perfilAtual !== 'professor' && perfilAtual !== 'tutoria');
+    document.getElementById('steps-tutoria').classList.add('hidden');
+
+    const moduloKey = (perfilAtual === 'professor' || perfilAtual === 'tutoria') ? 'prof' : perfilAtual;
+    const etapasModulo = ordemEtapas[moduloKey] || [];
+    const containerSteps = document.getElementById('steps-professor');
+
+    if(containerSteps && (perfilAtual === 'professor' || perfilAtual === 'tutoria')) {
+      const tabs = containerSteps.querySelectorAll('.step-tab');
+      const idxAtual = etapasModulo.indexOf(nomeTela);
+      tabs.forEach(tab => {
+        const idxTab = etapasModulo.indexOf(tab.dataset.step);
+        tab.classList.toggle('active', idxTab === idxAtual);
+        tab.classList.toggle('done', idxTab < idxAtual);
+      });
+    }
+  }
+
+  // ==========================================
+  // 1. LÓGICA DO ALUNO
+  // ==========================================
+  document.getElementById('btn-login-aluno').addEventListener('click', () => {
+    const turma = document.getElementById('aluno-turma-select').value;
+    const nome = document.getElementById('aluno-nome').value.trim();
+    const ra = document.getElementById('aluno-ra').value.trim();
+    const digito = document.getElementById('aluno-digito').value.trim();
+    const senha = document.getElementById('aluno-senha').value;
+    const erro = document.getElementById('erro-aluno-login');
+    erro.textContent = "";
+
+    if(!turma){ erro.textContent = "Selecione sua turma."; return; }
+    if(!nome){ erro.textContent = "Digite seu nome completo."; return; }
+    if(!ra || !digito){ erro.textContent = "Informe o RA e o dígito."; return; }
+
+    const banco = obterBancoUsuarios();
+    const aluno = banco.find(u => u.ra === ra && u.digito === digito);
+
+    if(!aluno){ erro.textContent = "Aluno não encontrado. Verifique o RA e dígito."; return; }
+    if(aluno.turma !== turma){ erro.textContent = `Acesso negado! Este aluno pertence à turma ${aluno.turma}.`; return; }
+    if(senha !== SENHA_ALUNO){ erro.textContent = "Senha incorreta."; return; }
+
+    estadoAluno.nome = aluno.nome;
+    estadoAluno.ra = ra;
+    estadoAluno.digito = digito;
+    estadoAluno.turma = aluno.turma;
+
+    mostrarTela('aluno-materia');
+  });
+
+  document.getElementById('btn-ver-boletim-aluno').addEventListener('click', () => {
+    const materia = document.getElementById('aluno-materia-select').value;
+    const erro = document.getElementById('erro-aluno-materia');
+    erro.textContent = "";
+
+    if(!materia){ erro.textContent = "Selecione uma matéria."; return; }
+
+    const banco = obterBancoUsuarios();
+    const aluno = banco.find(u => u.ra === estadoAluno.ra);
+
+    if(!aluno || !aluno.materias || !aluno.materias[materia]) {
+        erro.textContent = "Notas ainda não lançadas para essa matéria."; return;
+    }
+
+    estadoAluno.materia = materia;
+    estadoAluno.notas = aluno.materias[materia]; 
+
+    document.getElementById('aluno-resultado-nome').textContent = `${estadoAluno.nome} (RA: ${estadoAluno.ra}-${estadoAluno.digito})`;
+    document.getElementById('aluno-resultado-materia').textContent = `Matéria: ${materia}`;
+
+    const corpo = document.getElementById('aluno-boletim-corpo');
+    corpo.innerHTML = "";
+    estadoAluno.notas.forEach((nota, idx) => {
+      corpo.innerHTML += `<tr><td>${idx + 1}º Bimestre</td><td class="num">${nota.toFixed(1)}</td></tr>`;
+    });
+
+    const media = estadoAluno.notas.reduce((s, n) => s + n, 0) / estadoAluno.notas.length;
+    document.getElementById('aluno-boletim-media').textContent = media.toFixed(2);
+    
+    const stamp = document.getElementById('aluno-stamp-resultado');
+    const texto = document.getElementById('aluno-resultado-texto');
+
+    if(media >= 5){
+      stamp.textContent = "Aprovado"; stamp.className = "stamp ok";
+      texto.textContent = `Parabéns, você atingiu a média em ${materia}!`;
+    } else {
+      stamp.textContent = "Reprovado"; stamp.className = "stamp rec"; 
+      texto.textContent = `Sua média ficou abaixo de 5.0 em ${materia}.`;
+    }
+
+    mostrarTela('aluno-boletim');
+  });
+
+  // ==========================================
+  // 2. LÓGICA DOS PAIS / RESPONSÁVEIS
+  // ==========================================
+  document.getElementById('btn-login-pais').addEventListener('click', () => {
+    const nome = document.getElementById('pais-nome').value.trim();
+    const telOriginal = document.getElementById('pais-telefone').value.trim();
+    const tel = normalizarTelefone(telOriginal);
+    const senha = document.getElementById('pais-senha').value;
+    const erro = document.getElementById('erro-pais-login');
+    erro.textContent = "";
+
+    if(!nome){ erro.textContent = "Por favor, digite seu nome."; return; }
+    if(!tel || tel.length < 8){ erro.textContent = "Informe um telefone/WhatsApp válido para contato dos professores."; return; }
+    if(!senha){ erro.textContent = "Digite uma senha para acessar."; return; }
+
+    estadoPais.nome = nome;
+    estadoPais.telefone = telOriginal;
+
+    // Busca automaticamente os alunos vinculados a este telefone de responsável
+    // (vínculo feito pelo professor/tutoria na Gestão de Turmas)
+    const banco = obterBancoUsuarios();
+    const filhosVinculados = banco.filter(u => u.responsavelTelefone && u.responsavelTelefone === tel);
+    estadoPais.filhosVinculados = filhosVinculados;
+
+    if(filhosVinculados.length === 0) {
+      erro.textContent = "Nenhum aluno vinculado a este telefone ainda. Procure a coordenação/tutoria da escola para vincular seu cadastro ao(à) aluno(a).";
+      return;
+    }
+
+    if(filhosVinculados.length === 1) {
+      // Só tem um filho vinculado: vai direto para o boletim, sem tela de busca
+      verBoletimPai(filhosVinculados[0].ra);
+      return;
+    }
+
+    // Mais de um filho vinculado ao mesmo telefone (irmãos): mostra a lista para escolher
+    document.getElementById('pais-boas-vindas').textContent = `Bem-vindo(a), ${nome}. Selecione o(a) filho(a):`;
+    document.getElementById('pais-filtro-wrap').style.display = filhosVinculados.length > 3 ? '' : 'none';
+    carregarFilhosVinculados("");
+    mostrarTela('pais-busca');
+  });
+
+  document.getElementById('btn-pais-buscar').addEventListener('click', () => {
+    const termo = document.getElementById('pais-busca-input').value.trim();
+    carregarFilhosVinculados(termo);
+  });
+
+  function carregarFilhosVinculados(termo) {
+    const corpo = document.getElementById('pais-filhos-corpo');
+    corpo.innerHTML = "";
+
+    const lista = (estadoPais.filhosVinculados || []).filter(u =>
+      u.nome.toLowerCase().includes(termo.toLowerCase()) ||
+      u.ra.includes(termo)
+    );
+
+    if(lista.length === 0) {
+      corpo.innerHTML = `<tr><td colspan="4" class="vazio-tabela">Nenhum filho encontrado com esses dados.</td></tr>`;
+      return;
+    }
+
+    lista.forEach(aluno => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${aluno.turma || "S/T"}</td>
+        <td>${aluno.nome}</td>
+        <td>${aluno.ra}</td>
+        <td><button class="btn-selecionar" onclick="verBoletimPai('${aluno.ra}')">Ver Notas</button></td>
+      `;
+      corpo.appendChild(tr);
+    });
+  }
+
+  function verBoletimPai(raAluno) {
+    const banco = obterBancoUsuarios();
+    const aluno = banco.find(u => u.ra === raAluno);
+    if(!aluno) return;
+
+    estadoPais.filhoSelecionado = aluno;
+    document.getElementById('pais-filho-nome').textContent = `${aluno.nome} (${aluno.turma || "Sem Turma"}) — RA: ${aluno.ra}`;
+
+    // Se o responsável só tem um filho vinculado, o botão "voltar" sai do portal;
+    // se tiver mais de um (irmãos), volta para a lista de seleção.
+    const temVariosFilhos = (estadoPais.filhosVinculados || []).length > 1;
+    const btnVoltar = document.getElementById('btn-pais-voltar');
+    if(temVariosFilhos) {
+      btnVoltar.textContent = "← Voltar para Meus Filhos";
+      btnVoltar.onclick = () => mostrarTela('pais-busca');
+    } else {
+      btnVoltar.textContent = "← Sair do Portal dos Pais";
+      btnVoltar.onclick = () => trocarPerfil('pais');
+    }
+
+    const corpo = document.getElementById('pais-boletim-corpo');
+    corpo.innerHTML = "";
+
+    LISTA_MATERIAS.forEach(mat => {
+      const notas = (aluno.materias && aluno.materias[mat]) ? aluno.materias[mat] : [];
+      const n1 = notas[0] !== undefined ? notas[0].toFixed(1) : "-";
+      const n2 = notas[1] !== undefined ? notas[1].toFixed(1) : "-";
+      const n3 = notas[2] !== undefined ? notas[2].toFixed(1) : "-";
+      const n4 = notas[3] !== undefined ? notas[3].toFixed(1) : "-";
+
+      let mediaFormatada = "-";
+      let corMedia = "var(--ink)";
+
+      if(notas.length === 4) {
+        const media = notas.reduce((a,b)=>a+b, 0) / 4;
+        mediaFormatada = media.toFixed(1);
+        corMedia = media >= 5.0 ? "var(--pen-green)" : "var(--pen-red)";
+      }
+
+      corpo.innerHTML += `
+        <tr>
+          <td>${mat}</td>
+          <td class="num">${n1}</td>
+          <td class="num">${n2}</td>
+          <td class="num">${n3}</td>
+          <td class="num">${n4}</td>
+          <td class="num" style="font-weight:bold; color:${corMedia}">${mediaFormatada}</td>
+        </tr>
+      `;
+    });
+
+    const mensagem = encodeURIComponent(`Olá, sou ${estadoPais.nome}, responsável pelo aluno ${aluno.nome} (${aluno.turma}). Meu telefone é ${estadoPais.telefone}. Gostaria de conversar sobre as notas do boletim.`);
+    document.getElementById('link-whatsapp-prof').href = `https://api.whatsapp.com/send?text=${mensagem}`;
+
+    mostrarTela('pais-boletim');
+  }
+
+  // ==========================================
+  // 3. LÓGICA DO PROFESSOR E GERADOR DE PDF
+  // ==========================================
+  document.getElementById('btn-login-prof').addEventListener('click', () => {
+    const nome = document.getElementById('prof-nome').value.trim();
+    const senha = document.getElementById('prof-senha').value;
+    const erro = document.getElementById('erro-prof-login');
+    if(!nome){ erro.textContent = "Digite seu nome."; return; }
+    if(senha !== SENHA_PROFESSOR && senha !== SENHA_DIRETOR){ erro.textContent = "Senha incorreta."; return; }
+    
+    estadoProf.nome = nome;
+    document.getElementById('prof-boas-vindas').textContent = `Bem-vindo(a), ${nome}. Selecione um aluno ou acesse a tutoria.`;
+    carregarTabelaProf();
+    mostrarTela('prof-alunos');
+  });
+
+  function carregarTabelaProf(){
+    const banco = obterBancoUsuarios();
+    const corpo = document.getElementById('prof-alunos-corpo');
+    corpo.innerHTML = "";
+    banco.forEach(aluno => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${aluno.nome}</td><td>${aluno.turma || "S/T"}</td>`;
+      const td = document.createElement('td');
+      const btn = document.createElement('button');
+      btn.className = 'btn-selecionar'; btn.textContent = 'Acessar Ficha';
+      btn.onclick = () => {
+          estadoProf.alunoSelecionado = aluno;
+          document.getElementById('prof-aluno-selecionado-texto').textContent = `Aluno: ${aluno.nome} (${aluno.ra})`;
+          mostrarTela('prof-materia');
+      };
+      td.appendChild(btn); tr.appendChild(td);
+      corpo.appendChild(tr);
+    });
+  }
+
+  document.getElementById('btn-prof-materia-continuar').addEventListener('click', () => {
+      const mat = document.getElementById('prof-materia-select').value;
+      if(!mat) { document.getElementById('erro-prof-materia').textContent = "Selecione uma matéria."; return; }
+      estadoProf.materiaSelecionada = mat;
+      document.getElementById('prof-sub-notas').textContent = `${mat} | ${estadoProf.alunoSelecionado.nome}`;
+      
+      const notas = estadoProf.alunoSelecionado.materias ? estadoProf.alunoSelecionado.materias[mat] : null;
+      ['prof-nota1','prof-nota2','prof-nota3','prof-nota4'].forEach((id, idx) => {
+          document.getElementById(id).value = (notas && notas[idx] !== undefined) ? notas[idx] : "";
+      });
+      document.getElementById('sucesso-prof-notas').classList.add('hidden');
+      document.getElementById('erro-prof-notas').textContent = "";
+      mostrarTela('prof-notas');
+  });
+
+  document.getElementById('btn-salvar-notas-prof').addEventListener('click', () => {
+      const ids = ['prof-nota1','prof-nota2','prof-nota3','prof-nota4'];
+      const notas = [];
+      const erroEl = document.getElementById('erro-prof-notas');
+      const sucessoEl = document.getElementById('sucesso-prof-notas');
+      erroEl.textContent = ""; sucessoEl.classList.add('hidden');
+
+      for(const id of ids){
+          const val = document.getElementById(id).value;
+          if(val === ""){ erroEl.textContent = "Preencha todas as 4 notas."; return; }
+          const num = parseFloat(val);
+          if(isNaN(num) || num < 0 || num > 10){ erroEl.textContent = "Notas devem ser de 0 a 10."; return; }
+          notas.push(num);
+      }
+
+      let banco = obterBancoUsuarios();
+      const idx = banco.findIndex(u => u.ra === estadoProf.alunoSelecionado.ra);
+      if(idx >= 0){
+          if(!banco[idx].materias) banco[idx].materias = {};
+          banco[idx].materias[estadoProf.materiaSelecionada] = notas;
+          localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+          estadoProf.alunoSelecionado = banco[idx];
+          sucessoEl.classList.remove('hidden');
+      }
+  });
+
+  // FUNÇÕES DE EXPORTAÇÃO EM PDF COM TODAS AS MATÉRIAS VISÍVEIS
+  function abrirOpcoesPDFProfessor() {
+    const aluno = estadoProf.alunoSelecionado;
+    if(!aluno) return;
+
+    document.getElementById('pdf-prof-aluno-nome').textContent = aluno.nome;
+    document.getElementById('pdf-preview-nome').textContent = aluno.nome;
+    document.getElementById('pdf-preview-ra').textContent = `${aluno.ra}-${aluno.digito || '0'}`;
+    document.getElementById('pdf-preview-turma').textContent = aluno.turma || "Sem Turma";
+
+    atualizarPreviewPDF();
+    mostrarTela('prof-pdf');
+  }
+
+  function atualizarPreviewPDF() {
+    const aluno = estadoProf.alunoSelecionado;
+    if (!aluno) return;
+
+    const tipo = document.getElementById('select-tipo-pdf').value;
+    const tabela = document.getElementById('tabela-pdf-preview');
+    let html = "";
+
+    if (tipo === "TODOS") {
+      html = `
+        <thead>
+          <tr>
+            <th>Matéria</th>
+            <th class="num">1º B</th>
+            <th class="num">2º B</th>
+            <th class="num">3º B</th>
+            <th class="num">4º B</th>
+            <th class="num">Média</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      LISTA_MATERIAS.forEach(mat => {
+        const notas = (aluno.materias && aluno.materias[mat]) ? aluno.materias[mat] : [];
+        
+        const n1 = (notas[0] !== undefined && notas[0] !== null) ? notas[0].toFixed(1) : "N/A";
+        const n2 = (notas[1] !== undefined && notas[1] !== null) ? notas[1].toFixed(1) : "N/A";
+        const n3 = (notas[2] !== undefined && notas[2] !== null) ? notas[2].toFixed(1) : "N/A";
+        const n4 = (notas[3] !== undefined && notas[3] !== null) ? notas[3].toFixed(1) : "N/A";
+
+        const notasValidas = notas.filter(n => n !== undefined && n !== null);
+        let media = "N/A";
+        if (notasValidas.length > 0) {
+          media = (notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length).toFixed(1);
+        }
+
+        html += `
+          <tr>
+            <td style="font-weight: 500;">${mat}</td>
+            <td class="num">${n1}</td>
+            <td class="num">${n2}</td>
+            <td class="num">${n3}</td>
+            <td class="num">${n4}</td>
+            <td class="num" style="font-weight:bold;">${media}</td>
+          </tr>
+        `;
+      });
+
+    } else {
+      const bimIndex = parseInt(tipo);
+      const nomesBimestres = ["1º Bimestre", "2º Bimestre", "3º Bimestre", "4º Bimestre"];
+
+      html = `
+        <thead>
+          <tr>
+            <th>Matéria</th>
+            <th class="num">Nota (${nomesBimestres[bimIndex]})</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      LISTA_MATERIAS.forEach(mat => {
+        const notas = (aluno.materias && aluno.materias[mat]) ? aluno.materias[mat] : [];
+        const notaBimestre = (notas[bimIndex] !== undefined && notas[bimIndex] !== null) 
+          ? notas[bimIndex].toFixed(1) 
+          : "N/A";
+
+        html += `
+          <tr>
+            <td style="font-weight: 500;">${mat}</td>
+            <td class="num" style="font-weight:bold;">${notaBimestre}</td>
+          </tr>
+        `;
+      });
+    }
+
+    html += `</tbody>`;
+    tabela.innerHTML = html;
+  }
+
+  function executarDownloadPDF() {
+    const elemento = document.getElementById('area-impressao-pdf');
+    const aluno = estadoProf.alunoSelecionado;
+
+    const clone = elemento.cloneNode(true);
+    clone.style.width = '700px';
+    clone.style.padding = '20px';
+    clone.style.background = '#ffffff';
+    clone.style.color = '#000000';
+    clone.style.boxSizing = 'border-box';
+
+    const containerTemp = document.createElement('div');
+    containerTemp.style.position = 'absolute';
+    containerTemp.style.left = '-9999px';
+    containerTemp.style.top = '0';
+    containerTemp.style.width = '750px';
+    containerTemp.appendChild(clone);
+    document.body.appendChild(containerTemp);
+
+    const configuracoes = {
+      margin:       [10, 10, 10, 10],
+      filename:     `Boletim_${aluno ? aluno.nome.replace(/\s+/g, '_') : 'Aluno'}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, windowWidth: 800 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    html2pdf().set(configuracoes).from(clone).save().then(() => {
+      document.body.removeChild(containerTemp);
+    }).catch(err => {
+      console.error(err);
+      if(document.body.contains(containerTemp)) document.body.removeChild(containerTemp);
+    });
+  }
+
+  // ==========================================
+  // 4. LÓGICA DA TUTORIA
+  // ==========================================
+  document.getElementById('btn-login-dir').addEventListener('click', () => {
+    const nome = document.getElementById('dir-nome').value.trim();
+    const senha = document.getElementById('dir-senha').value;
+    const erro = document.getElementById('erro-dir-login');
+    erro.textContent = "";
+
+    if(!nome) { erro.textContent = "Digite seu usuário."; return; }
+    if(senha !== SENHA_DIRETOR) { erro.textContent = "Senha incorreta."; return; }
+
+    estadoDir.nome = nome;
+    document.getElementById('dir-boas-vindas').textContent = `Bem-vindo(a), Tutor(a) ${nome}.`;
+    carregarTabelaDiretor("TODAS");
+    mostrarTela('dir-turmas');
+  });
+
+  document.getElementById('dir-turma-select').addEventListener('change', (e) => {
+    carregarTabelaDiretor(e.target.value);
+  });
+
+  function carregarTabelaDiretor(turmaFiltro) {
+    const banco = obterBancoUsuarios();
+    const corpo = document.getElementById('dir-turmas-corpo');
+    corpo.innerHTML = "";
+
+    let filtrados = banco;
+    if (turmaFiltro !== "TODAS") {
+      filtrados = banco.filter(u => (turmaFiltro === "SEM-TURMA" ? !u.turma : u.turma === turmaFiltro));
+    }
+
+    if (filtrados.length === 0) {
+      corpo.innerHTML = `<tr><td colspan="4" class="vazio-tabela">Nenhum aluno encontrado nesta turma.</td></tr>`;
+      return;
+    }
+
+    filtrados.forEach(aluno => {
+      const tr = document.createElement('tr');
+      const respTexto = aluno.responsavelTelefone
+        ? `${aluno.responsavelNome || "Responsável"}<br><span style="opacity:0.7; font-size:11px;">${aluno.responsavelTelefone}</span>`
+        : `<span style="opacity:0.55; font-style:italic;">Não vinculado</span>`;
+      tr.innerHTML = `
+        <td style="color:var(--pen-blue); font-weight:bold">${aluno.turma || "S/T"}</td>
+        <td>${aluno.nome}</td>
+        <td>${aluno.ra}</td>
+        <td>${respTexto}</td>
+      `;
+
+      const tdAcoes = document.createElement('td');
+      tdAcoes.className = 'acoes-cell';
+
+      const btnVer = document.createElement('button');
+      btnVer.className = 'btn-selecionar'; btnVer.textContent = 'Boletim';
+      btnVer.onclick = () => abrirBoletimDir(aluno);
+
+      const btnEdit = document.createElement('button');
+      btnEdit.className = 'btn-editar'; btnEdit.textContent = 'Editar';
+      btnEdit.onclick = () => abrirEditDir(aluno);
+
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn-excluir'; btnDel.textContent = 'Excluir';
+      btnDel.onclick = () => excluirAluno(aluno.ra, aluno.nome);
+
+      tdAcoes.appendChild(btnVer); tdAcoes.appendChild(btnEdit); tdAcoes.appendChild(btnDel);
+      tr.appendChild(tdAcoes);
+      corpo.appendChild(tr);
+    });
+  }
+
+  function excluirAluno(ra, nome) {
+    if(confirm(`Deseja excluir o aluno ${nome} (RA: ${ra}) do sistema?`)) {
+      let banco = obterBancoUsuarios().filter(u => u.ra !== ra);
+      localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+      carregarTabelaDiretor(document.getElementById('dir-turma-select').value);
+    }
+  }
+
+  function abrirBoletimDir(aluno) {
+    estadoDir.alunoSelecionado = aluno;
+    document.getElementById('dir-boletim-nome').textContent = `${aluno.nome} (${aluno.turma || "Sem Turma"})`;
+    const corpo = document.getElementById('dir-boletim-corpo');
+    corpo.innerHTML = "";
+    
+    LISTA_MATERIAS.forEach(mat => {
+      const notas = (aluno.materias && aluno.materias[mat]) ? aluno.materias[mat] : [];
+      const n1 = notas[0] !== undefined ? notas[0].toFixed(1) : "-";
+      const n2 = notas[1] !== undefined ? notas[1].toFixed(1) : "-";
+      const n3 = notas[2] !== undefined ? notas[2].toFixed(1) : "-";
+      const n4 = notas[3] !== undefined ? notas[3].toFixed(1) : "-";
+
+      let media = "-"; let cor = "var(--ink)";
+      if(notas.length === 4) {
+        const m = notas.reduce((a,b)=>a+b, 0) / 4;
+        media = m.toFixed(1);
+        cor = m >= 5.0 ? "var(--pen-green)" : "var(--pen-red)";
+      }
+
+      corpo.innerHTML += `
+        <tr>
+          <td>${mat}</td>
+          <td class="num">${n1}</td><td class="num">${n2}</td>
+          <td class="num">${n3}</td><td class="num">${n4}</td>
+          <td class="num" style="font-weight:bold; color:${cor}">${media}</td>
+        </tr>`;
+    });
+    mostrarTela('dir-boletim');
+  }
+
+  document.getElementById('btn-salvar-novo-aluno').addEventListener('click', () => {
+    const turma = document.getElementById('dir-novo-turma').value;
+    const nome = document.getElementById('dir-novo-nome').value.trim();
+    const ra = document.getElementById('dir-novo-ra').value.trim();
+    const digito = document.getElementById('dir-novo-digito').value.trim();
+    const erro = document.getElementById('erro-dir-novo');
+    const sucesso = document.getElementById('sucesso-dir-novo');
+    erro.textContent = ""; sucesso.classList.add('hidden');
+
+    if(!turma || !nome || !ra || !digito){ erro.textContent = "Preencha todos os campos."; return; }
+
+    let banco = obterBancoUsuarios();
+    if(banco.some(u => u.ra === ra)){ erro.textContent = "Já existe aluno com este RA."; return; }
+
+    const respNome = document.getElementById('dir-novo-resp-nome').value.trim();
+    const respTel = normalizarTelefone(document.getElementById('dir-novo-resp-tel').value);
+
+    banco.push({ nome, ra, digito, turma, materias: {}, responsavelNome: respNome, responsavelTelefone: respTel });
+    localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+
+    sucesso.textContent = `Aluno ${nome} cadastrado!`;
+    sucesso.classList.remove('hidden');
+    document.getElementById('dir-novo-nome').value = "";
+    document.getElementById('dir-novo-ra').value = "";
+    document.getElementById('dir-novo-digito').value = "";
+    document.getElementById('dir-novo-resp-nome').value = "";
+    document.getElementById('dir-novo-resp-tel').value = "";
+  });
+
+  function abrirEditDir(aluno) {
+    estadoDir.alunoSelecionado = aluno;
+    document.getElementById('dir-edit-turma-texto').textContent = `Turma: ${aluno.turma || "Sem Turma"}`;
+    document.getElementById('dir-edit-nome').value = aluno.nome;
+    document.getElementById('dir-edit-ra').value = aluno.ra;
+    document.getElementById('dir-edit-digito').value = aluno.digito;
+    document.getElementById('dir-edit-resp-nome').value = aluno.responsavelNome || "";
+    document.getElementById('dir-edit-resp-tel').value = aluno.responsavelTelefone || "";
+    document.getElementById('erro-dir-edit').textContent = "";
+    document.getElementById('sucesso-dir-edit').classList.add('hidden');
+    mostrarTela('dir-edit-aluno');
+  }
+
+  document.getElementById('btn-salvar-edit-aluno').addEventListener('click', () => {
+    const nome = document.getElementById('dir-edit-nome').value.trim();
+    const ra = document.getElementById('dir-edit-ra').value.trim();
+    const digito = document.getElementById('dir-edit-digito').value.trim();
+    const erro = document.getElementById('erro-dir-edit');
+
+    if(!nome || !ra || !digito){ erro.textContent = "Preencha todos os campos."; return; }
+
+    const respNome = document.getElementById('dir-edit-resp-nome').value.trim();
+    const respTel = normalizarTelefone(document.getElementById('dir-edit-resp-tel').value);
+
+    let banco = obterBancoUsuarios();
+    const idx = banco.findIndex(u => u.ra === estadoDir.alunoSelecionado.ra);
+    if(idx >= 0) {
+      banco[idx].nome = nome;
+      banco[idx].ra = ra;
+      banco[idx].digito = digito;
+      banco[idx].responsavelNome = respNome;
+      banco[idx].responsavelTelefone = respTel;
+      localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+      estadoDir.alunoSelecionado = banco[idx];
+      document.getElementById('sucesso-dir-edit').textContent = respTel ? "Dados atualizados e responsável vinculado!" : "Dados atualizados!";
+      document.getElementById('sucesso-dir-edit').classList.remove('hidden');
+    }
+  });
+
+</script>
+</body>
+</html>
