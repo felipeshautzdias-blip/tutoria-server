@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root{
+    --bg:#e4e4e4;
+    --bg-dark:#cfcfcf;
     --board:#1f3a2e;
     --board-dark:#132720;
     --frame:#6b4a30;
@@ -18,16 +20,16 @@
     --paper-edge:#e0d1a6;
     --gold:#cf9f4f;
     --ink:#332a1c;
+    --text-dark:#2b2b2b;
+    --text-dim:#6b6b6b;
   }
   *{ box-sizing:border-box; }
   html,body{ margin:0; padding:0; }
   body{
     min-height:100vh;
-    background:
-      radial-gradient(ellipse at top, rgba(255,255,255,0.05), transparent 60%),
-      linear-gradient(180deg, var(--board) 0%, var(--board-dark) 100%);
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-dark) 100%);
     font-family:'Inter', sans-serif;
-    color:var(--chalk);
+    color:var(--text-dark);
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -35,74 +37,125 @@
   }
   header{
     text-align:center;
-    margin-bottom:36px;
+    margin-bottom:32px;
   }
   header h1{
     font-family:'Special Elite', monospace;
     letter-spacing:0.08em;
     font-size:34px;
     margin:0 0 6px;
-    color:var(--chalk);
+    color:var(--text-dark);
   }
   header p{
-    color:var(--chalk-dim);
+    color:var(--text-dim);
     font-size:15px;
     margin:0;
   }
-  .grid{
+
+  /* QUADRO VERDE — moldura ao redor dos cards, tipo quadro-negro na parede cinza */
+  .quadro{
     width:100%;
-    max-width:920px;
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
-    gap:20px;
+    max-width:640px;
+    background:
+      radial-gradient(ellipse at top, rgba(255,255,255,0.05), transparent 60%),
+      linear-gradient(180deg, var(--board) 0%, var(--board-dark) 100%);
+    border:14px solid var(--frame);
+    border-image: linear-gradient(180deg, var(--frame), var(--frame-dark)) 1;
+    border-radius:4px;
+    padding:26px 22px;
+    box-shadow:
+      0 18px 40px rgba(0,0,0,0.35),
+      inset 0 0 0 1px rgba(0,0,0,0.15);
   }
-  .card{
-    background:var(--paper);
-    border:1px solid var(--paper-edge);
-    border-radius:10px;
-    padding:22px 20px;
-    color:var(--ink);
-    text-decoration:none;
+  .quadro-titulo{
+    font-family:'Special Elite', monospace;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    font-size:11px;
+    color:var(--chalk-dim);
+    text-align:center;
+    margin:0 0 16px;
+  }
+
+  /* CARDS ESTILO "LOJA DE APPS" */
+  .grid{
     display:flex;
     flex-direction:column;
-    gap:10px;
-    box-shadow:0 6px 14px rgba(0,0,0,0.25);
+    gap:12px;
+  }
+  .card{
+    background:#ffffff;
+    border-radius:16px;
+    padding:14px 16px;
+    color:var(--text-dark);
+    text-decoration:none;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.18);
     transition:transform .15s ease, box-shadow .15s ease;
   }
   .card:hover{
-    transform:translateY(-3px);
-    box-shadow:0 10px 20px rgba(0,0,0,0.32);
+    transform:translateY(-2px);
+    box-shadow:0 8px 16px rgba(0,0,0,0.25);
   }
   .card .icone{
-    font-size:30px;
+    flex:none;
+    width:52px;
+    height:52px;
+    border-radius:14px;
+    background:linear-gradient(135deg, var(--gold), #a97a2f);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.25);
+  }
+  .card .info{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
   }
   .card h2{
-    font-family:'Special Elite', monospace;
-    font-size:18px;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:15.5px;
     margin:0;
-    letter-spacing:0.03em;
+    color:var(--text-dark);
   }
   .card p{
-    font-size:13.5px;
+    font-size:12.5px;
     margin:0;
-    color:#5a4d34;
-    line-height:1.4;
+    color:var(--text-dim);
+    line-height:1.35;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
   }
   .card .abrir{
-    margin-top:auto;
-    font-family:'Special Elite', monospace;
+    flex:none;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
     font-size:12px;
-    letter-spacing:0.05em;
-    color:var(--gold);
+    letter-spacing:0.02em;
+    color:#fff;
+    background:var(--board);
+    padding:7px 14px;
+    border-radius:20px;
   }
   .card.em-breve{
-    opacity:0.55;
+    opacity:0.5;
     cursor:default;
     pointer-events:none;
   }
+  .card.em-breve .abrir{
+    background:#9a9a9a;
+  }
   footer{
     margin-top:48px;
-    color:var(--chalk-dim);
+    color:var(--text-dim);
     font-size:12px;
     text-align:center;
   }
@@ -115,19 +168,26 @@
     <p>Escolha um sistema para acessar</p>
   </header>
 
-  <div class="grid">
-    <a class="card" href="/tutoria.html">
-      <div class="icone">📘</div>
-      <h2>Tutoria</h2>
-      <p>Boletim digital — portal de alunos, professores e diretoria.</p>
-      <span class="abrir">ABRIR →</span>
-    </a>
+  <div class="quadro">
+    <p class="quadro-titulo">Sistemas disponíveis</p>
+    <div class="grid">
+      <a class="card" href="/tutoria.html">
+        <div class="icone">📘</div>
+        <div class="info">
+          <h2>Tutoria</h2>
+          <p>Boletim digital — portal de alunos, professores e diretoria.</p>
+        </div>
+        <span class="abrir">ABRIR</span>
+      </a>
 
-    <div class="card em-breve">
-      <div class="icone">🗂️</div>
-      <h2>Em breve</h2>
-      <p>Novos sistemas vão aparecer aqui conforme forem adicionados.</p>
-      <span class="abrir">EM BREVE</span>
+      <a class="card" href="/trabalho.html">
+        <div class="icone">📝</div>
+        <div class="info">
+          <h2>Portal Unificado</h2>
+          <p>Boletim digital & portal unificado — nova versão do sistema.</p>
+        </div>
+        <span class="abrir">ABRIR</span>
+      </a>
     </div>
   </div>
 
