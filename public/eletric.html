@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eletric Company</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #0a0a0c;
+    --card-bg: rgba(20, 20, 28, 0.8);
+    --neon-blue: #00f0ff;
+    --neon-purple: #b026ff;
+    --text-main: #ffffff;
+    --text-dim: #a0a0b0;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--bg-dark);
+    /* Efeito de iluminação Neon nas laterais */
+    background-image: 
+      radial-gradient(circle at left center, rgba(0, 240, 255, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at right center, rgba(176, 38, 255, 0.15) 0%, transparent 50%);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  header h1 {
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.12em;
+    font-size: 38px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    color: #fff;
+    text-transform: uppercase;
+    text-shadow: 
+      0 0 10px rgba(0, 240, 255, 0.5),
+      0 0 20px rgba(0, 240, 255, 0.3);
+  }
+
+  header p {
+    color: var(--text-dim);
+    font-size: 15px;
+    margin: 0;
+  }
+
+  /* CONTAINER DE PROJETOS */
+  .projetos-container {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .projetos-titulo {
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 13px;
+    color: var(--neon-blue);
+    text-align: center;
+    margin: 0 0 20px;
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+  }
+
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 16px;
+    padding: 16px 20px;
+    color: var(--text-main);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--neon-blue);
+    box-shadow: 
+      0 0 15px rgba(0, 240, 255, 0.3),
+      inset 0 0 10px rgba(0, 240, 255, 0.1);
+  }
+
+  .card .icone {
+    flex: none;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(176, 38, 255, 0.2));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+
+  .card .info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .card h2 {
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0;
+    color: #fff;
+  }
+
+  .card p {
+    font-size: 13px;
+    margin: 0;
+    color: var(--text-dim);
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .card .abrir {
+    flex: none;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: #fff;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+    padding: 8px 18px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(176, 38, 255, 0.4);
+    transition: opacity 0.2s ease;
+  }
+
+  .card:hover .abrir {
+    opacity: 0.9;
+  }
+
+  footer {
+    margin-top: 48px;
+    color: var(--text-dim);
+    font-size: 12px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <h1>ELETRIC COMPANY</h1>
+    <p>Selecione um projeto para acessar</p>
+  </header>
+
+  <div class="projetos-container">
+    <p class="projetos-titulo">Projetos</p>
+    
+    <div class="grid">
+      <a class="card" href="/meu-projeto.html">
+        <div class="icone">⚡</div>
+        <div class="info">
+          <h2>Nome do Projeto</h2>
+          <p>Descrição breve do seu novo projeto ou página HTML.</p>
+        </div>
+        <span class="abrir">ABRIR</span>
+      </a>
+
+      </div>
+  </div>
+
+  <footer>de felipe schaustz dias</footer>
+
+</body>
+</html>
