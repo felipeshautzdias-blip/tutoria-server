@@ -1598,4 +1598,216 @@
     if(!nome) { erro.textContent = "Digite seu usuário."; return; }
     if(senha !== SENHA_DIRETOR) { erro.textContent = "Senha incorreta."; return; }
 
-    estadoDi
+    estadoDir.nome = nome;
+    document.getElementById('dir-boas-vindas').textContent = `Bem-vindo(a), Diretor(a) ${nome}.`;
+    carregarTabelaDiretor("TODAS");
+    mostrarTela('dir-turmas');
+  });
+
+  document.getElementById('dir-turma-select').addEventListener('change', (e) => {
+    carregarTabelaDiretor(e.target.value);
+  });
+
+  function carregarTabelaDiretor(turmaFiltro) {
+    const banco = obterBancoUsuarios();
+    const corpo = document.getElementById('dir-turmas-corpo');
+    corpo.innerHTML = "";
+
+    let filtrados = banco;
+    if (turmaFiltro !== "TODAS") {
+      filtrados = banco.filter(u => (turmaFiltro === "SEM-TURMA" ? !u.turma : u.turma === turmaFiltro));
+    }
+
+    if (filtrados.length === 0) {
+      corpo.innerHTML = `<tr><td colspan="4" class="vazio-tabela">Nenhum aluno encontrado nesta turma.</td></tr>`;
+      return;
+    }
+
+    filtrados.forEach(aluno => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:var(--pen-blue); font-weight:bold">${aluno.turma || "S/T"}</td>
+        <td>${aluno.nome}</td>
+        <td>${aluno.ra}</td>
+      `;
+
+      const tdAcoes = document.createElement('td');
+      tdAcoes.className = 'acoes-cell';
+
+      const btnVer = document.createElement('button');
+      btnVer.className = 'btn-selecionar'; btnVer.textContent = 'Boletim';
+      btnVer.onclick = () => abrirBoletimDir(aluno);
+
+      const btnEdit = document.createElement('button');
+      btnEdit.className = 'btn-editar'; btnEdit.textContent = 'Editar';
+      btnEdit.onclick = () => abrirEditDir(aluno);
+
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn-excluir'; btnDel.textContent = 'Excluir';
+      btnDel.onclick = () => excluirAluno(aluno.ra, aluno.nome);
+
+      tdAcoes.appendChild(btnVer); tdAcoes.appendChild(btnEdit); tdAcoes.appendChild(btnDel);
+      tr.appendChild(tdAcoes);
+      corpo.appendChild(tr);
+    });
+  }
+
+  function excluirAluno(ra, nome) {
+    if(confirm(`Deseja excluir o aluno ${nome} (RA: ${ra}) do sistema?`)) {
+      let banco = obterBancoUsuarios().filter(u => u.ra !== ra);
+      localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+      carregarTabelaDiretor(document.getElementById('dir-turma-select').value);
+    }
+  }
+
+  function abrirBoletimDir(aluno) {
+    estadoDir.alunoSelecionado = aluno;
+    document.getElementById('dir-boletim-nome').textContent = `${aluno.nome} (${aluno.turma || "Sem Turma"})`;
+    const corpo = document.getElementById('dir-boletim-corpo');
+    corpo.innerHTML = "";
+    
+    LISTA_MATERIAS.forEach(mat => {
+      const notas = (aluno.materias && aluno.materias[mat]) ? aluno.materias[mat] : [];
+      const n1 = notas[0] !== undefined ? notas[0].toFixed(1) : "-";
+      const n2 = notas[1] !== undefined ? notas[1].toFixed(1) : "-";
+      const n3 = notas[2] !== undefined ? notas[2].toFixed(1) : "-";
+      const n4 = notas[3] !== undefined ? notas[3].toFixed(1) : "-";
+
+      let media = "-"; let cor = "var(--ink)";
+      if(notas.length === 4) {
+        const m = notas.reduce((a,b)=>a+b, 0) / 4;
+        media = m.toFixed(1);
+        cor = m >= 5.0 ? "var(--pen-green)" : "var(--pen-red)";
+      }
+
+      corpo.innerHTML += `
+        <tr>
+          <td>${mat}</td>
+          <td class="num">${n1}</td><td class="num">${n2}</td>
+          <td class="num">${n3}</td><td class="num">${n4}</td>
+          <td class="num" style="font-weight:bold; color:${cor}">${media}</td>
+        </tr>`;
+    });
+    mostrarTela('dir-boletim');
+  }
+
+  document.getElementById('btn-salvar-novo-aluno').addEventListener('click', () => {
+    const turma = document.getElementById('dir-novo-turma').value;
+    const nome = document.getElementById('dir-novo-nome').value.trim();
+    const ra = document.getElementById('dir-novo-ra').value.trim();
+    const digito = document.getElementById('dir-novo-digito').value.trim();
+    const erro = document.getElementById('erro-dir-novo');
+    const sucesso = document.getElementById('sucesso-dir-novo');
+    erro.textContent = ""; sucesso.classList.add('hidden');
+
+    if(!turma || !nome || !ra || !digito){ erro.textContent = "Preencha todos os campos."; return; }
+
+    let banco = obterBancoUsuarios();
+    if(banco.some(u => u.ra === ra)){ erro.textContent = "Já existe aluno com este RA."; return; }
+
+    banco.push({ nome, ra, digito, turma, materias: {} });
+    localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+
+    sucesso.textContent = `Aluno ${nome} cadastrado!`;
+    sucesso.classList.remove('hidden');
+    document.getElementById('dir-novo-nome').value = "";
+    document.getElementById('dir-novo-ra').value = "";
+    document.getElementById('dir-novo-digito').value = "";
+  });
+
+  function abrirEditDir(aluno) {
+    estadoDir.alunoSelecionado = aluno;
+    document.getElementById('dir-edit-turma-texto').textContent = `Turma: ${aluno.turma || "Sem Turma"}`;
+    document.getElementById('dir-edit-nome').value = aluno.nome;
+    document.getElementById('dir-edit-ra').value = aluno.ra;
+    document.getElementById('dir-edit-digito').value = aluno.digito;
+    document.getElementById('erro-dir-edit').textContent = "";
+    document.getElementById('sucesso-dir-edit').classList.add('hidden');
+    mostrarTela('dir-edit-aluno');
+  }
+
+  document.getElementById('btn-salvar-edit-aluno').addEventListener('click', () => {
+    const nome = document.getElementById('dir-edit-nome').value.trim();
+    const ra = document.getElementById('dir-edit-ra').value.trim();
+    const digito = document.getElementById('dir-edit-digito').value.trim();
+    const erro = document.getElementById('erro-dir-edit');
+
+    if(!nome || !ra || !digito){ erro.textContent = "Preencha todos os campos."; return; }
+
+    let banco = obterBancoUsuarios();
+    const idx = banco.findIndex(u => u.ra === estadoDir.alunoSelecionado.ra);
+    if(idx >= 0) {
+      banco[idx].nome = nome;
+      banco[idx].ra = ra;
+      banco[idx].digito = digito;
+      localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+      document.getElementById('sucesso-dir-edit').textContent = "Dados atualizados!";
+      document.getElementById('sucesso-dir-edit').classList.remove('hidden');
+    }
+  });
+
+
+/* ===== KANBAN INTERATIVO ===== */
+const KB = (() => {
+  const KEY='conect_escola_kanban_v1';
+  let editId=null, filter='all', draggedId=null;
+  const seed=[
+    {id:crypto.randomUUID(),title:'Revisar conteúdo da próxima prova',desc:'Separe 30 minutos para revisar os pontos principais.',status:'todo',priority:'high',tag:'Estudos',due:''},
+    {id:crypto.randomUUID(),title:'Fazer atividade de matemática',desc:'Resolver os exercícios pendentes.',status:'doing',priority:'medium',tag:'Matemática',due:''},
+    {id:crypto.randomUUID(),title:'Entregar trabalho',desc:'Trabalho finalizado e pronto para entrega.',status:'done',priority:'low',tag:'Projeto',due:''}
+  ];
+  function get(){try{return JSON.parse(localStorage.getItem(KEY))||seed}catch(e){return seed}}
+  function saveAll(a){localStorage.setItem(KEY,JSON.stringify(a))}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+  function priorityLabel(p){return p==='high'?'🔥 Alta':p==='low'?'Baixa':'Média'}
+  function matches(c){
+    const q=document.getElementById('kb-search').value.trim().toLowerCase();
+    if(q && !(`${c.title} ${c.desc} ${c.tag}`.toLowerCase().includes(q))) return false;
+    if(filter==='today' && c.due!==new Date().toISOString().slice(0,10)) return false;
+    if(filter==='high' && c.priority!=='high') return false;
+    return true;
+  }
+  function card(c){
+    const el=document.createElement('article'); el.className='kb-card'; el.draggable=true; el.dataset.id=c.id;
+    const due=c.due?new Date(c.due+'T00:00:00').toLocaleDateString('pt-BR'):'';
+    const border=c.priority==='high'?'#a8352a':c.priority==='medium'?'#cf9f4f':'#2e6b4f';
+    el.style.borderLeftColor=border;
+    el.innerHTML=`<div class="kb-card-title">${esc(c.title)}</div>
+      ${c.desc?`<div class="kb-card-desc">${esc(c.desc)}</div>`:''}
+      <div class="kb-meta"><span class="kb-tag">${esc(c.tag||'Geral')}</span><span class="kb-tag">${priorityLabel(c.priority)}</span>${due?`<span class="kb-date">📅 ${due}</span>`:''}</div>
+      <div class="kb-card-actions"><button class="kb-icon" data-action="edit">✏️ Editar</button><button class="kb-icon" data-action="delete">🗑️</button></div>`;
+    el.addEventListener('dragstart',e=>{draggedId=c.id;el.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',c.id)});
+    el.addEventListener('dragend',()=>{draggedId=null;el.classList.remove('dragging');document.querySelectorAll('.kb-dropzone').forEach(x=>x.classList.remove('drag-over'))});
+    el.addEventListener('click',e=>{const a=e.target.closest('[data-action]');if(!a)return;e.stopPropagation();if(a.dataset.action==='edit')edit(c.id);else remove(c.id)});
+    return el;
+  }
+  function render(){
+    const data=get();
+    document.querySelectorAll('.kb-dropzone').forEach(z=>z.innerHTML='');
+    const counts={todo:0,doing:0,done:0};
+    data.forEach(c=>{counts[c.status]++;if(matches(c)){document.querySelector(`[data-status="${c.status}"]`).appendChild(card(c))}});
+    Object.entries(counts).forEach(([k,v])=>document.getElementById('kb-count-'+k).textContent=v);
+    document.getElementById('kb-stats').textContent=`${data.length} tarefa${data.length!==1?'s':''} • ${counts.done} concluída${counts.done!==1?'s':''}`;
+  }
+  function open(){document.getElementById('kanban-overlay').classList.add('open');document.getElementById('kanban-overlay').setAttribute('aria-hidden','false');render()}
+  function close(){document.getElementById('kanban-overlay').classList.remove('open');document.getElementById('kanban-overlay').setAttribute('aria-hidden','true');closeModal()}
+  function newCard(){editId=null;document.getElementById('kb-modal-title').textContent='Nova tarefa';['kb-title','kb-desc','kb-tag','kb-due'].forEach(id=>document.getElementById(id).value='');document.getElementById('kb-status').value='todo';document.getElementById('kb-priority').value='medium';document.getElementById('kb-modal').classList.add('open');setTimeout(()=>document.getElementById('kb-title').focus(),50)}
+  function edit(id){const c=get().find(x=>x.id===id);if(!c)return;editId=id;document.getElementById('kb-modal-title').textContent='Editar tarefa';document.getElementById('kb-title').value=c.title;document.getElementById('kb-desc').value=c.desc||'';document.getElementById('kb-status').value=c.status;document.getElementById('kb-priority').value=c.priority||'medium';document.getElementById('kb-tag').value=c.tag||'';document.getElementById('kb-due').value=c.due||'';document.getElementById('kb-modal').classList.add('open')}
+  function closeModal(){document.getElementById('kb-modal').classList.remove('open')}
+  function save(e){e.preventDefault();const a=get();const obj={id:editId||crypto.randomUUID(),title:document.getElementById('kb-title').value.trim(),desc:document.getElementById('kb-desc').value.trim(),status:document.getElementById('kb-status').value,priority:document.getElementById('kb-priority').value,tag:document.getElementById('kb-tag').value.trim()||'Geral',due:document.getElementById('kb-due').value};const i=a.findIndex(x=>x.id===editId);if(i>=0)a[i]=obj;else a.unshift(obj);saveAll(a);closeModal();render()}
+  function remove(id){const c=get().find(x=>x.id===id);if(c&&confirm(`Excluir "${c.title}"?`)){saveAll(get().filter(x=>x.id!==id));render()}}
+  function setFilter(f){filter=f;render()}
+  function clearDone(){if(confirm('Excluir todas as tarefas concluídas?')){saveAll(get().filter(c=>c.status!=='done'));render()}}
+  document.querySelectorAll('.kb-dropzone').forEach(z=>{
+    z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag-over')});
+    z.addEventListener('dragleave',()=>z.classList.remove('drag-over'));
+    z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag-over');const id=e.dataTransfer.getData('text/plain')||draggedId;const a=get();const c=a.find(x=>x.id===id);if(c){c.status=z.dataset.status;saveAll(a);render()}});
+  });
+  document.getElementById('kanban-overlay').addEventListener('click',e=>{if(e.target.id==='kanban-overlay')close()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+  return {open,close,newCard,edit,save,closeModal,render,setFilter,clearDone};
+})();
+
+</script>
+</body>
+</html>
