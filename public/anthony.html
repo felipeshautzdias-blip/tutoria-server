@@ -509,8 +509,9 @@ body.admin-mode .visitor-only{display:none}
             <input id="tech" placeholder="HTML, CSS, JavaScript">
           </div>
           <div>
-            <label for="link">Link para abrir o projeto (opcional)</label>
-            <input id="link" type="url" placeholder="https://...">
+            <label for="projectFile">Arquivo do projeto (.html)</label>
+            <input id="projectFile" type="file" accept=".html,.htm,text/html">
+            <span class="note" id="projectFileName"></span>
           </div>
           <div>
             <label for="codeLink">Link do código (opcional)</label>
@@ -519,7 +520,7 @@ body.admin-mode .visitor-only{display:none}
         </div>
         <div class="form-actions">
           <button class="btn primary" type="submit">🚀 Adicionar projeto</button>
-          <span class="note">Os dados são armazenados com segurança no armazenamento local do navegador.</span>
+          <span class="note">Os dados são armazenados com segurança no servidor.</span>
         </div>
       </form>
     </div>
@@ -669,13 +670,22 @@ window.openProject = function(id){
   document.getElementById("modalTags").innerHTML = (p.tech||[]).map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join("");
   const links = document.getElementById("modalLinks");
   links.innerHTML = "";
-  if(p.link){
+  if(p.projectHtml){
+    const btn=document.createElement("button"); btn.type="button"; btn.className="btn primary"; btn.textContent="▶ Abrir projeto";
+    btn.onclick = () => {
+      const blob = new Blob([p.projectHtml], {type:"text/html"});
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    };
+    links.appendChild(btn);
+  } else if(p.link){
     const a=document.createElement("a"); a.className="btn primary"; a.href=p.link; a.target="_blank"; a.rel="noopener"; a.textContent="▶ Abrir projeto"; links.appendChild(a);
   }
   if(p.codeLink){
     const a=document.createElement("a"); a.className="btn"; a.href=p.codeLink; a.target="_blank"; a.rel="noopener"; a.textContent="💻 Ver código"; links.appendChild(a);
   }
-  if(!p.link && !p.codeLink){
+  if(!p.projectHtml && !p.link && !p.codeLink){
     links.innerHTML = '<span class="note">Os links deste projeto ainda não foram cadastrados.</span>';
   }
   document.getElementById("modal").classList.add("show");
@@ -686,10 +696,33 @@ document.getElementById("modal").addEventListener("click", e => {
   if(e.target.id === "modal") e.currentTarget.classList.remove("show");
 });
 
-document.getElementById("projectForm").addEventListener("submit", e => {
+function readFileAsText(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
+}
+
+const projectFileInput = document.getElementById("projectFile");
+const projectFileName = document.getElementById("projectFileName");
+projectFileInput.addEventListener("change", () => {
+  projectFileName.textContent = projectFileInput.files[0] ? `Selecionado: ${projectFileInput.files[0].name}` : "";
+});
+
+document.getElementById("projectForm").addEventListener("submit", async e => {
   e.preventDefault();
   if(!document.body.classList.contains("admin-mode")) return;
   if(e.currentTarget.dataset.editingId) return;
+
+  const file = projectFileInput.files[0];
+  let projectHtml = "";
+  if(file){
+    try{ projectHtml = await readFileAsText(file); }
+    catch(err){ alert("Não foi possível ler o arquivo .html enviado."); return; }
+  }
+
   const project = {
     id: Date.now().toString(),
     name: document.getElementById("name").value.trim(),
@@ -697,13 +730,15 @@ document.getElementById("projectForm").addEventListener("submit", e => {
     description: document.getElementById("description").value.trim(),
     emoji: document.getElementById("emoji").value.trim() || "💡",
     tech: document.getElementById("tech").value.split(",").map(x=>x.trim()).filter(Boolean),
-    link: document.getElementById("link").value.trim(),
+    projectHtml: projectHtml,
+    projectFileName: file ? file.name : "",
     codeLink: document.getElementById("codeLink").value.trim()
   };
   projects.unshift(project);
   save();
   e.target.reset();
   document.getElementById("emoji").value="💡";
+  projectFileName.textContent = "";
   render();
   document.getElementById("projetos").scrollIntoView({behavior:"smooth"});
 });
@@ -867,22 +902,32 @@ window.editProject = function(id){
   document.getElementById("description").value=p.description;
   document.getElementById("emoji").value=p.emoji || "💡";
   document.getElementById("tech").value=(p.tech||[]).join(", ");
-  document.getElementById("link").value=p.link || "";
   document.getElementById("codeLink").value=p.codeLink || "";
+  projectFileInput.value="";
+  projectFileName.textContent = p.projectFileName ? `Arquivo atual: ${p.projectFileName} (envie um novo para substituir)` : "";
   document.getElementById("projectForm").dataset.editingId=id;
   document.getElementById("publicar").scrollIntoView({behavior:"smooth"});
 };
 
 const originalSubmit = document.getElementById("projectForm").onsubmit;
-document.getElementById("projectForm").addEventListener("submit", e => {
+document.getElementById("projectForm").addEventListener("submit", async e => {
   const form=e.currentTarget;
   if(!document.body.classList.contains("admin-mode")){
     e.preventDefault(); return;
   }
   const editingId=form.dataset.editingId;
   if(editingId){
+    e.preventDefault();
+    e.stopImmediatePropagation();
     const index=projects.findIndex(x=>x.id===editingId);
     if(index>=0){
+      const file = projectFileInput.files[0];
+      let projectHtml = projects[index].projectHtml || "";
+      let projectFileNameVal = projects[index].projectFileName || "";
+      if(file){
+        try{ projectHtml = await readFileAsText(file); projectFileNameVal = file.name; }
+        catch(err){ alert("Não foi possível ler o arquivo .html enviado."); return; }
+      }
       projects[index]={
         ...projects[index],
         name:document.getElementById("name").value.trim(),
@@ -890,11 +935,13 @@ document.getElementById("projectForm").addEventListener("submit", e => {
         description:document.getElementById("description").value.trim(),
         emoji:document.getElementById("emoji").value.trim() || "💡",
         tech:document.getElementById("tech").value.split(",").map(x=>x.trim()).filter(Boolean),
-        link:document.getElementById("link").value.trim(),
+        projectHtml: projectHtml,
+        projectFileName: projectFileNameVal,
         codeLink:document.getElementById("codeLink").value.trim()
       };
       save(); render(); renderAdmin(); form.reset(); form.dataset.editingId="";
       document.getElementById("emoji").value="💡";
+      projectFileName.textContent = "";
       document.getElementById("projetos").scrollIntoView({behavior:"smooth"});
     }
   }
