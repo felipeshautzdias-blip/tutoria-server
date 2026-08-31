@@ -34,6 +34,7 @@
     flex-direction:column;
     align-items:center;
     padding:40px 20px 60px;
+    position: relative; /* Define referência para o posicionamento absoluto */
   }
   header{
     text-align:center;
@@ -208,17 +209,16 @@
 
   <script>
     const imgEsquerda = document.createElement('img');
-    imgEsquerda.src = 'imagem.jpg';
-    imgEsquerda.alt = 'me ajuda ai';
+    imgEsquerda.src = 'imagem.png';
+    imgEsquerda.alt = 'Banner Lateral';
 
     Object.assign(imgEsquerda.style, {
-      position: 'fixed',
+      position: 'absolute',
       left: '20px',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      maxWidth: '120px',
+      top: '40px',
+      maxWidth: '150px',
       height: 'auto',
-      zIndex: '1000'
+      zIndex: '10'
     });
 
     document.body.appendChild(imgEsquerda);
