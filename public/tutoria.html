@@ -598,10 +598,6 @@
         </table>
       </div>
 
-      <a id="link-whatsapp-prof" target="_blank" style="text-decoration: none;">
-        <button class="btn btn-green" type="button" style="margin-bottom:10px;">📱 Falar com a Escola / Tutoria</button>
-      </a>
-
       <button class="btn btn-ghost" type="button" onclick="mostrarTela('pais-busca')">← Voltar para Meus Filhos</button>
     </div>
 
@@ -1508,9 +1504,6 @@
         </tr>
       `;
     });
-
-    const mensagem = encodeURIComponent(`Olá, sou ${estadoPais.nome}, responsável pelo aluno ${aluno.nome} (${aluno.turma}). Gostaria de conversar sobre a tutoria.`);
-    document.getElementById('link-whatsapp-prof').href = `https://api.whatsapp.com/send?text=${mensagem}`;
 
     mostrarTela('pais-boletim');
   }
