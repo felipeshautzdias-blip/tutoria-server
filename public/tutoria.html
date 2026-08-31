@@ -870,43 +870,109 @@
   let estadoProf = { usuario: "", tutoria: "", alunoSelecionado: null, materiaSelecionada: "" };
   let estadoAdm = { usuario: "", logado: false };
 
+  // ===== Persistência no servidor (com localStorage como cache/fallback) =====
+  // Os dados de alunos usam o endpoint dedicado /api/alunos; os de
+  // professores usam o endpoint genérico /api/store/professores.
+  let bancoAlunosCache = null;
+  let bancoProfessoresCache = null;
+
+  const PADRAO_ALUNOS = [
+    {
+      turma: "Tutoria Prof. Carlos",
+      nome: "Gabriel Santos",
+      ra: "1234567890123",
+      digito: "0",
+      responsavelNome: "Carlos Santos",
+      responsavelTelefone: "11999998888",
+      materias: {
+        "Matemática": [8.5, 7.0, 9.0, 8.0],
+        "Português": [7.0, 8.0, 7.5, 8.5]
+      }
+    }
+  ];
+
+  const PADRAO_PROFESSORES = [
+    { usuario: "prof_carlos", senha: "123", tutoria: "Tutoria Prof. Carlos" }
+  ];
+
+  // Carrega os dados do servidor assim que a página abre. Enquanto essa
+  // requisição não termina, obterBancoUsuarios()/obterBancoProfessores()
+  // usam o que estiver salvo localmente (localStorage) como fallback.
+  async function inicializarDadosDoServidor() {
+    try {
+      const resp = await fetch('/api/alunos');
+      if (!resp.ok) throw new Error('Falha ao buscar alunos: ' + resp.status);
+      const dados = await resp.json();
+      // Se o servidor ainda não tem nada salvo (primeira execução), usa os
+      // dados padrão em vez de sobrescrever com uma lista vazia.
+      bancoAlunosCache = (Array.isArray(dados) && dados.length > 0) ? dados : obterBancoUsuarios();
+      localStorage.setItem('banco_alunos', JSON.stringify(bancoAlunosCache));
+    } catch (e) {
+      console.error('Não foi possível carregar alunos do servidor, usando cache local:', e);
+    }
+
+    try {
+      const resp = await fetch('/api/store/professores');
+      if (!resp.ok) throw new Error('Falha ao buscar professores: ' + resp.status);
+      const dados = await resp.json();
+      bancoProfessoresCache = (Array.isArray(dados) && dados.length > 0) ? dados : obterBancoProfessores();
+      localStorage.setItem('banco_professores', JSON.stringify(bancoProfessoresCache));
+    } catch (e) {
+      console.error('Não foi possível carregar professores do servidor, usando cache local:', e);
+    }
+  }
+  inicializarDadosDoServidor();
+
   function obterBancoUsuarios() {
+    if (bancoAlunosCache) return bancoAlunosCache;
     const local = localStorage.getItem('banco_alunos');
     if (local) {
       try { return JSON.parse(local); } catch (e) { console.error(e); }
     }
-    return [
-      {
-        turma: "Tutoria Prof. Carlos",
-        nome: "Gabriel Santos",
-        ra: "1234567890123",
-        digito: "0",
-        responsavelNome: "Carlos Santos",
-        responsavelTelefone: "11999998888",
-        materias: {
-          "Matemática": [8.5, 7.0, 9.0, 8.0],
-          "Português": [7.0, 8.0, 7.5, 8.5]
-        }
-      }
-    ];
+    return PADRAO_ALUNOS;
   }
 
   function salvarBanco(banco) {
+    bancoAlunosCache = banco;
     localStorage.setItem('banco_alunos', JSON.stringify(banco));
+    fetch('/api/alunos', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(banco)
+    })
+      .then(resp => {
+        if (!resp.ok) throw new Error('Status ' + resp.status);
+      })
+      .catch(e => {
+        console.error('Falha ao salvar alunos no servidor:', e);
+        alert('Atenção: não foi possível salvar os dados no servidor. As alterações ficaram apenas neste navegador.');
+      });
   }
 
   function obterBancoProfessores() {
+    if (bancoProfessoresCache) return bancoProfessoresCache;
     const local = localStorage.getItem('banco_professores');
     if (local) {
       try { return JSON.parse(local); } catch (e) { console.error(e); }
     }
-    return [
-      { usuario: "prof_carlos", senha: "123", tutoria: "Tutoria Prof. Carlos" }
-    ];
+    return PADRAO_PROFESSORES;
   }
 
   function salvarBancoProfessores(banco) {
+    bancoProfessoresCache = banco;
     localStorage.setItem('banco_professores', JSON.stringify(banco));
+    fetch('/api/store/professores', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(banco)
+    })
+      .then(resp => {
+        if (!resp.ok) throw new Error('Status ' + resp.status);
+      })
+      .catch(e => {
+        console.error('Falha ao salvar professores no servidor:', e);
+        alert('Atenção: não foi possível salvar os dados no servidor. As alterações ficaram apenas neste navegador.');
+      });
   }
 
   function normalizarTelefone(tel) {
