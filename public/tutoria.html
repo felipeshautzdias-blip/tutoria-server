@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema Escolar — Boletim Digital & Portal Unificado</title>
+<!-- Biblioteca Externa para Gerar PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
@@ -369,12 +370,6 @@
     color:rgba(51,42,28,0.65); margin: -6px 0 14px;
   }
 
-  .busca-box {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
   /* ESTRUTURA PARA FORMATAÇÃO DO PDF */
   #area-impressao-pdf {
     background: #ffffff;
@@ -398,20 +393,6 @@
     filter: drop-shadow(0 4px 4px rgba(0,0,0,0.35)); pointer-events:none;
   }
 
-  footer.credit{
-    text-align:center; margin-top:22px; font-family:'Special Elite', monospace;
-    font-size:11px; letter-spacing:0.08em; color: var(--chalk-dim);
-  }
-  
-  .reset-link {
-      color: var(--chalk-dim);
-      text-decoration: underline;
-      cursor: pointer;
-      margin-top: 10px;
-      display: inline-block;
-  }
-  .reset-link:hover { color: var(--chalk); }
-
   @media (max-width:480px){
     .panel{ padding:30px 18px 30px 58px; }
     .ficha::before{ left:38px; }
@@ -433,46 +414,41 @@
     </svg>
   </div>
 
+  <!-- SELETOR GLOBAL DE PERFIS UNIFICADO -->
   <div class="profile-selector">
     <button class="profile-btn active" onclick="trocarPerfil('aluno')">🎓 Aluno</button>
     <button class="profile-btn" onclick="trocarPerfil('pais')">👨‍👩‍👧 Responsáveis / Pais</button>
-    <button class="profile-btn" onclick="trocarPerfil('professor')">👨‍🏫 Professor & 📋 Tutoria</button>
+    <button class="profile-btn" onclick="trocarPerfil('professor')">👨‍🏫 Professor & Tutoria</button>
     <button class="profile-btn" onclick="trocarPerfil('adm')">🔑 Administrador (Adm)</button>
   </div>
 
+  <!-- ABAS DO ALUNO -->
   <div class="steps" id="steps-aluno">
     <div class="step-tab" data-step="aluno-login">1 · Login</div>
     <div class="step-tab" data-step="aluno-materia">2 · Matéria</div>
     <div class="step-tab" data-step="aluno-boletim">3 · Boletim</div>
   </div>
 
+  <!-- ABAS DOS PAIS -->
   <div class="steps hidden" id="steps-pais">
     <div class="step-tab" data-step="pais-login">1 · Login dos Pais</div>
     <div class="step-tab" data-step="pais-busca">2 · Meus Filhos</div>
     <div class="step-tab" data-step="pais-boletim">3 · Boletim Escolar</div>
   </div>
   
+  <!-- ABAS DO PROFESSOR E TUTORIA -->
   <div class="steps hidden" id="steps-professor">
-    <div class="step-tab" data-step="prof-login">1 · Login</div>
-    <div class="step-tab" data-step="prof-alunos">2 · Alunos (Prof.)</div>
-    <div class="step-tab" data-step="dir-turmas">3 · Gestão/Turmas (Tutoria)</div>
-    <div class="step-tab" data-step="prof-materia">4 · Matéria</div>
-    <div class="step-tab" data-step="prof-notas">5 · Lançar Notas</div>
-    <div class="step-tab" data-step="prof-pdf">6 · Gerar PDF</div>
+    <div class="step-tab" data-step="prof-login">1 · Login Tutor</div>
+    <div class="step-tab" data-step="prof-alunos">2 · Minha Tutoria</div>
+    <div class="step-tab" data-step="prof-materia">3 · Matéria</div>
+    <div class="step-tab" data-step="prof-notas">4 · Lançar Notas</div>
+    <div class="step-tab" data-step="prof-pdf">5 · Gerar PDF</div>
   </div>
 
+  <!-- ABAS DO ADMINISTRADOR (ADM) -->
   <div class="steps hidden" id="steps-adm">
     <div class="step-tab" data-step="adm-login">1 · Login Adm</div>
-    <div class="step-tab" data-step="dir-turmas">2 · Painel Geral Adm</div>
-    <div class="step-tab" data-step="dir-add-aluno">3 · Novo Aluno</div>
-  </div>
-
-  <div class="steps hidden" id="steps-tutoria">
-    <div class="step-tab" data-step="dir-login">1 · Acesso</div>
-    <div class="step-tab" data-step="dir-turmas">2 · Turmas</div>
-    <div class="step-tab" data-step="dir-boletim">3 · Ficha Geral</div>
-    <div class="step-tab" data-step="dir-add-aluno">4 · Novo Aluno</div>
-    <div class="step-tab" data-step="dir-edit-aluno">5 · Editar</div>
+    <div class="step-tab" data-step="adm-painel">2 · Cadastrar Professor/Tutor</div>
   </div>
 
   <div class="ficha">
@@ -481,30 +457,16 @@
     </svg>
     <div class="furos"><span></span><span></span><span></span></div>
 
+    <!-- ======================= -->
+    <!-- 1. ÁREA DO ALUNO        -->
+    <!-- ======================= -->
     <div class="panel" id="tela-aluno-login">
       <p class="saudacao">Acesso do Aluno</p>
-      <p class="sub">Informe sua turma, nome, RA, dígito e senha para ver seu boletim.</p>
+      <p class="sub">Informe o nome da sua Tutoria, seu nome completo, RA, dígito e senha.</p>
 
       <div class="campo">
-        <label for="aluno-turma-select">Turma</label>
-        <select id="aluno-turma-select">
-          <option value="">Selecione sua turma...</option>
-          <option value="6A">6º Ano A (6A)</option>
-          <option value="6B">6º Ano B (6B)</option>
-          <option value="7A">7º Ano A (7A)</option>
-          <option value="7B">7º Ano B (7B)</option>
-          <option value="8A">8º Ano A (8A)</option>
-          <option value="8B">8º Ano B (8B)</option>
-          <option value="9A">9º Ano A (9A)</option>
-          <option value="9B">9º Ano B (9B)</option>
-          <option value="1A">1º Ano E.M. A (1A)</option>
-          <option value="1B">1º Ano E.M. B (1B)</option>
-          <option value="1C">1º Ano E.M. C (1C)</option>
-          <option value="2A">2º Ano E.M. A (2A)</option>
-          <option value="2B">2º Ano E.M. B (2B)</option>
-          <option value="3A-TECNICO">3º Ano Técnico (3A-TECNICO)</option>
-          <option value="3B-REGULAR">3º Ano Regular (3B-REGULAR)</option>
-        </select>
+        <label for="aluno-tutoria-nome">Nome da Tutoria / Sala</label>
+        <input type="text" id="aluno-tutoria-nome" placeholder="Ex: Tutoria Prof. Carlos">
       </div>
 
       <div class="campo">
@@ -569,9 +531,12 @@
       <button class="btn btn-ghost" type="button" onclick="trocarPerfil('aluno')">Sair do Sistema</button>
     </div>
 
+    <!-- ======================= -->
+    <!-- 2. ÁREA DOS PAIS        -->
+    <!-- ======================= -->
     <div class="panel hidden" id="tela-pais-login">
       <p class="saudacao">Área dos Pais & Responsáveis</p>
-      <p class="sub">Cadastre-se ou faça login com seus dados e telefone de contato.</p>
+      <p class="sub">Informe seus dados e telefone de contato para consultar seus filhos.</p>
 
       <div class="campo">
         <label for="pais-nome">Nome do Responsável</label>
@@ -581,12 +546,11 @@
       <div class="campo">
         <label for="pais-telefone">Número de Telefone / WhatsApp (Com DDD)</label>
         <input type="tel" id="pais-telefone" placeholder="(11) 99999-9999">
-        <p style="font-size:11px; color:var(--paper-shadow); margin:4px 2px 0;">Use o mesmo telefone que a escola cadastrou como responsável do(a) aluno(a).</p>
       </div>
 
       <div class="campo">
-        <label for="pais-senha">Crie ou digite sua Senha</label>
-        <input type="password" id="pais-senha" autocomplete="off" placeholder="Senha dos Pais">
+        <label for="pais-senha">Senha</label>
+        <input type="password" id="pais-senha" autocomplete="off" placeholder="Digite sua senha">
       </div>
 
       <div class="erro" id="erro-pais-login"></div>
@@ -597,19 +561,11 @@
       <p class="saudacao">Meus Filhos</p>
       <p class="sub" id="pais-boas-vindas">Alunos vinculados ao seu telefone.</p>
 
-      <div class="campo" id="pais-filtro-wrap" style="display:none;">
-        <label for="pais-busca-input">Filtrar por nome ou RA</label>
-        <div class="busca-box">
-          <input type="text" id="pais-busca-input" placeholder="Digite o nome do aluno ou RA..." style="margin-bottom:0;">
-          <button class="btn" type="button" id="btn-pais-buscar" style="width:100px; padding:10px; margin-top:0;">Buscar</button>
-        </div>
-      </div>
-
       <div class="tabela-scroll">
         <table class="boletim-table">
           <thead>
             <tr>
-              <th>Turma</th>
+              <th>Tutoria</th>
               <th>Nome do Aluno</th>
               <th>RA</th>
               <th>Ação</th>
@@ -625,7 +581,6 @@
     <div class="panel hidden" id="tela-pais-boletim">
       <p class="saudacao">Boletim Escolar do Filho</p>
       <p class="resultado-nome" id="pais-filho-nome"></p>
-      <p class="sub" style="text-align:center; margin-top:-14px;">Média anual completa por matéria</p>
 
       <div class="tabela-scroll">
         <table class="boletim-table">
@@ -644,36 +599,39 @@
       </div>
 
       <a id="link-whatsapp-prof" target="_blank" style="text-decoration: none;">
-        <button class="btn btn-green" type="button" style="margin-bottom:10px;">📱 Falar com a Escola / Professores</button>
+        <button class="btn btn-green" type="button" style="margin-bottom:10px;">📱 Falar com a Escola / Tutoria</button>
       </a>
 
-      <button class="btn btn-ghost" type="button" id="btn-pais-voltar" onclick="mostrarTela('pais-busca')">← Voltar para Meus Filhos</button>
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('pais-busca')">← Voltar para Meus Filhos</button>
     </div>
 
+    <!-- ============================================== -->
+    <!-- 3. ÁREA DO PROFESSOR E TUTORIA                 -->
+    <!-- ============================================== -->
     <div class="panel hidden" id="tela-prof-login">
-      <p class="saudacao">Portal do Professor & Tutoria</p>
-      <p class="sub">Acesso para lançamento de notas, gestão de turmas e emissão de boletins.</p>
+      <p class="saudacao">Portal do Professor / Tutor</p>
+      <p class="sub">Acesse para gerenciar os alunos exclusivos da sua tutoria e lançar notas.</p>
       <div class="campo">
-        <label for="prof-nome">Nome do Usuário</label>
-        <input type="text" id="prof-nome" placeholder="Seu nome">
+        <label for="prof-nome">Nome de Usuário (Cadastrado pelo Adm)</label>
+        <input type="text" id="prof-nome" placeholder="Ex: professor_carlos">
       </div>
       <div class="campo">
         <label for="prof-senha">Senha</label>
-        <input type="password" id="prof-senha" autocomplete="off" placeholder="Senha de Acesso">
+        <input type="password" id="prof-senha" autocomplete="off" placeholder="Sua senha">
       </div>
       <div class="erro" id="erro-prof-login"></div>
-      <button class="btn" type="button" id="btn-login-prof">Entrar no Portal →</button>
+      <button class="btn" type="button" id="btn-login-prof">Acessar Minha Tutoria →</button>
     </div>
 
     <div class="panel hidden" id="tela-prof-alunos">
-      <p class="saudacao">Alunos Cadastrados</p>
+      <p class="saudacao">Minha Tutoria</p>
       <p class="sub" id="prof-boas-vindas"></p>
-      
-      <button class="btn btn-green" type="button" style="margin-bottom:15px;" onclick="mostrarTela('dir-turmas')">📋 Ir para Gestão de Turmas & Tutoria</button>
+
+      <button class="btn btn-green" type="button" style="margin-bottom:15px;" onclick="mostrarTela('dir-add-aluno')">➕ Cadastrar Aluno nesta Tutoria</button>
 
       <div class="tabela-scroll">
         <table class="boletim-table">
-          <thead><tr><th>Nome</th><th>Turma</th><th>Ações</th></tr></thead>
+          <thead><tr><th>Nome</th><th>RA</th><th>Ações</th></tr></thead>
           <tbody id="prof-alunos-corpo"></tbody>
         </table>
       </div>
@@ -681,15 +639,15 @@
     </div>
 
     <div class="panel hidden" id="tela-prof-materia">
-      <p class="saudacao">Ações para o Aluno</p>
+      <p class="saudacao">Gerenciar Aluno</p>
       <div class="aluno-selecionado-box">
         <p class="aluno-selecionado-texto" id="prof-aluno-selecionado-texto"></p>
       </div>
 
-      <button class="btn btn-pdf" type="button" onclick="abrirOpcoesPDFProfessor()">📄 Gerar PDF de Notas/Boletim</button>
+      <button class="btn btn-pdf" type="button" onclick="abrirOpcoesPDFProfessor()">📄 Gerar PDF do Boletim</button>
       <hr style="margin:20px 0; border:0; border-top:1px dashed var(--rule);">
 
-      <p class="sub">Ou selecione uma matéria para lançar notas:</p>
+      <p class="sub">Selecione uma matéria para lançar notas:</p>
       <div class="campo">
         <label for="prof-materia-select">Matéria</label>
         <select id="prof-materia-select">
@@ -709,7 +667,7 @@
       </div>
       <div class="erro" id="erro-prof-materia"></div>
       <button class="btn" type="button" id="btn-prof-materia-continuar">Lançar Notas →</button>
-      <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-alunos')">← Voltar</button>
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-alunos')">← Voltar para Minha Tutoria</button>
     </div>
 
     <div class="panel hidden" id="tela-prof-notas">
@@ -725,6 +683,7 @@
       <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-materia')">← Voltar</button>
     </div>
 
+    <!-- TELA PDF -->
     <div class="panel hidden" id="tela-prof-pdf">
       <p class="saudacao">Exportação em PDF</p>
       <p class="resultado-nome" id="pdf-prof-aluno-nome"></p>
@@ -752,10 +711,11 @@
           </div>
 
           <p style="margin:4px 0; font-size:13px; color:#111;"><strong>Aluno(a):</strong> <span id="pdf-preview-nome"></span></p>
-          <p style="margin:4px 0; font-size:13px; color:#111;"><strong>RA:</strong> <span id="pdf-preview-ra"></span> | <strong>Turma:</strong> <span id="pdf-preview-turma"></span></p>
+          <p style="margin:4px 0; font-size:13px; color:#111;"><strong>RA:</strong> <span id="pdf-preview-ra"></span> | <strong>Tutoria:</strong> <span id="pdf-preview-turma"></span></p>
 
           <table class="boletim-table" id="tabela-pdf-preview" style="margin-top:15px; color:#000;">
-            </table>
+            <!-- Gerado Dinamicamente -->
+          </table>
 
           <div style="margin-top: 25px; text-align: right; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 8px;">
             Relatório expedido digitalmente pelo corpo docente.
@@ -764,129 +724,10 @@
       </div>
     </div>
 
-    <div class="panel hidden" id="tela-adm-login">
-      <p class="saudacao">Painel de Administrador</p>
-      <p class="sub">Acesso restrito de alta prioridade administrativa.</p>
-      <div class="campo">
-        <label for="adm-usuario">Usuário Administrador</label>
-        <input type="text" id="adm-usuario" placeholder="Ex: admin">
-      </div>
-      <div class="campo">
-        <label for="adm-senha">Senha Master</label>
-        <input type="password" id="adm-senha" autocomplete="off" placeholder="Digite a senha de Adm">
-      </div>
-      <div class="erro" id="erro-adm-login"></div>
-      <button class="btn btn-adm" type="button" id="btn-login-adm">Autenticar Administrador →</button>
-    </div>
-
-    <div class="panel hidden" id="tela-dir-login">
-      <p class="saudacao">Portal da Tutoria</p>
-      <p class="sub">Acesso exclusivo para Tutoria Escolar.</p>
-      <div class="campo">
-        <label for="dir-nome">Usuário Tutor</label>
-        <input type="text" id="dir-nome" placeholder="Ex: Tutor">
-      </div>
-      <div class="campo">
-        <label for="dir-senha">Senha da Tutoria</label>
-        <input type="password" id="dir-senha" autocomplete="off" placeholder="Digite a senha">
-      </div>
-      <div class="erro" id="erro-dir-login"></div>
-      <button class="btn" style="background-color: var(--pen-red);" type="button" id="btn-login-dir">Acessar Sistema →</button>
-    </div>
-
-    <div class="panel hidden" id="tela-dir-turmas">
-      <p class="saudacao">Gestão de Turmas & Tutoria</p>
-      <p class="sub" id="dir-boas-vindas">Selecione uma turma ou adicione/edite alunos.</p>
-      
-      <div class="campo" style="margin-bottom: 16px;">
-        <label for="dir-turma-select">Filtro de Turma</label>
-        <select id="dir-turma-select">
-          <option value="TODAS">--- Todas as Turmas ---</option>
-          <option value="6A">6º Ano A (6A)</option>
-          <option value="6B">6º Ano B (6B)</option>
-          <option value="7A">7º Ano A (7A)</option>
-          <option value="7B">7º Ano B (7B)</option>
-          <option value="8A">8º Ano A (8A)</option>
-          <option value="8B">8º Ano B (8B)</option>
-          <option value="9A">9º Ano A (9A)</option>
-          <option value="9B">9º Ano B (9B)</option>
-          <option value="1A">1º Ano E.M. A (1A)</option>
-          <option value="1B">1º Ano E.M. B (1B)</option>
-          <option value="1C">1º Ano E.M. C (1C)</option>
-          <option value="2A">2º Ano E.M. A (2A)</option>
-          <option value="2B">2º Ano E.M. B (2B)</option>
-          <option value="3A-TECNICO">3º Ano Técnico (3A-TECNICO)</option>
-          <option value="3B-REGULAR">3º Ano Regular (3B-REGULAR)</option>
-        </select>
-      </div>
-
-      <button class="btn btn-green" type="button" style="margin-bottom:15px;" onclick="mostrarTela('dir-add-aluno')">➕ Cadastrar Novo Aluno</button>
-
-      <div class="tabela-scroll">
-        <table class="boletim-table">
-          <thead>
-            <tr>
-              <th>Turma</th>
-              <th>Nome</th>
-              <th>RA</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="dir-turmas-corpo"></tbody>
-        </table>
-      </div>
-
-      <button class="btn btn-ghost" type="button" onclick="trocarPerfil('professor')">← Sair para o Menu Principal</button>
-    </div>
-
-    <div class="panel hidden" id="tela-dir-boletim">
-      <p class="saudacao">Ficha Geral do Aluno</p>
-      <p class="resultado-nome" id="dir-boletim-nome"></p>
-
-      <div class="tabela-scroll">
-        <table class="boletim-table">
-          <thead>
-            <tr>
-              <th>Matéria</th>
-              <th class="num">1º B</th>
-              <th class="num">2º B</th>
-              <th class="num">3º B</th>
-              <th class="num">4º B</th>
-              <th class="num">Média</th>
-            </tr>
-          </thead>
-          <tbody id="dir-boletim-corpo"></tbody>
-        </table>
-      </div>
-
-      <button class="btn btn-ghost" type="button" onclick="mostrarTela('dir-turmas')">← Voltar para Lista de Turmas</button>
-    </div>
-
+    <!-- TELA CADASTRO DE ALUNOS PELO PROFESSOR -->
     <div class="panel hidden" id="tela-dir-add-aluno">
       <p class="saudacao">Cadastrar Novo Aluno</p>
-      <p class="sub">Preencha os dados do novo estudante abaixo.</p>
-
-      <div class="campo">
-        <label for="dir-add-turma">Turma</label>
-        <select id="dir-add-turma">
-          <option value="">Selecione...</option>
-          <option value="6A">6º Ano A (6A)</option>
-          <option value="6B">6º Ano B (6B)</option>
-          <option value="7A">7º Ano A (7A)</option>
-          <option value="7B">7º Ano B (7B)</option>
-          <option value="8A">8º Ano A (8A)</option>
-          <option value="8B">8º Ano B (8B)</option>
-          <option value="9A">9º Ano A (9A)</option>
-          <option value="9B">9º Ano B (9B)</option>
-          <option value="1A">1º Ano E.M. A (1A)</option>
-          <option value="1B">1º Ano E.M. B (1B)</option>
-          <option value="1C">1º Ano E.M. C (1C)</option>
-          <option value="2A">2º Ano E.M. A (2A)</option>
-          <option value="2B">2º Ano E.M. B (2B)</option>
-          <option value="3A-TECNICO">3º Ano Técnico (3A-TECNICO)</option>
-          <option value="3B-REGULAR">3º Ano Regular (3B-REGULAR)</option>
-        </select>
-      </div>
+      <p class="sub" id="add-aluno-tutoria-info">Adicionando aluno à sua tutoria.</p>
 
       <div class="campo">
         <label for="dir-add-nome">Nome Completo do Aluno</label>
@@ -920,18 +761,16 @@
       <div class="sucesso hidden" id="sucesso-dir-add">Aluno cadastrado com sucesso!</div>
 
       <button class="btn btn-green" type="button" id="btn-salvar-novo-aluno">Cadastrar Aluno</button>
-      <button class="btn btn-ghost" type="button" onclick="mostrarTela('dir-turmas')">← Cancelar / Voltar</button>
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-alunos')">← Voltar para Minha Tutoria</button>
     </div>
 
+    <!-- EDITAR ALUNO -->
     <div class="panel hidden" id="tela-dir-edit-aluno">
       <p class="saudacao">Editar Cadastro do Aluno</p>
-      <p class="sub">Altere os dados informados e salve as modificações.</p>
-
       <div class="campo">
         <label for="dir-edit-nome">Nome Completo do Aluno</label>
         <input type="text" id="dir-edit-nome">
       </div>
-
       <div class="campo">
         <label>RA e Dígito</label>
         <div class="ra-group">
@@ -939,25 +778,86 @@
           <input type="text" id="dir-edit-digito" inputmode="numeric" maxlength="2">
         </div>
       </div>
-
       <div class="campo">
         <label for="dir-edit-resp-nome">Nome do Responsável</label>
         <input type="text" id="dir-edit-resp-nome">
       </div>
-
       <div class="campo">
         <label for="dir-edit-resp-tel">Telefone / WhatsApp do Responsável</label>
         <input type="tel" id="dir-edit-resp-tel">
       </div>
-
       <div class="erro" id="erro-dir-edit"></div>
       <div class="sucesso hidden" id="sucesso-dir-edit">Alterações salvas!</div>
-
       <button class="btn btn-green" type="button" id="btn-salvar-edit-aluno">Salvar Alterações</button>
-      <button class="btn btn-ghost" type="button" onclick="mostrarTela('dir-turmas')">← Cancelar / Voltar</button>
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-alunos')">← Voltar</button>
     </div>
 
-  </div> </div> <script>
+    <!-- ============================================== -->
+    <!-- 4. ÁREA DO ADMINISTRADOR (ADM)                 -->
+    <!-- ============================================== -->
+    <div class="panel hidden" id="tela-adm-login">
+      <p class="saudacao">Painel de Administrador</p>
+      <p class="sub">Acesso restrito para gerenciar e cadastrar professores.</p>
+      <div class="campo">
+        <label for="adm-usuario">Usuário Administrador</label>
+        <input type="text" id="adm-usuario" placeholder="Ex: admin">
+      </div>
+      <div class="campo">
+        <label for="adm-senha">Senha Master</label>
+        <input type="password" id="adm-senha" autocomplete="off" placeholder="Digite a senha de Adm">
+      </div>
+      <div class="erro" id="erro-adm-login"></div>
+      <button class="btn btn-adm" type="button" id="btn-login-adm">Autenticar Administrador →</button>
+    </div>
+
+    <div class="panel hidden" id="tela-adm-painel">
+      <p class="saudacao">Gestão de Professores & Tutorias</p>
+      <p class="sub">Cadastre professores/tutores com nome de usuário, senha e o nome da tutoria.</p>
+
+      <div class="campo">
+        <label for="adm-prof-usuario">Nome de Usuário (Login do Prof/Tutor)</label>
+        <input type="text" id="adm-prof-usuario" placeholder="Ex: prof_carlos">
+      </div>
+
+      <div class="campo">
+        <label for="adm-prof-senha">Senha do Professor</label>
+        <input type="password" id="adm-prof-senha" placeholder="Senha de acesso do tutor">
+      </div>
+
+      <div class="campo">
+        <label for="adm-prof-tutoria">Nome da Tutoria / Sala</label>
+        <input type="text" id="adm-prof-tutoria" placeholder="Ex: Tutoria Prof. Carlos">
+      </div>
+
+      <div class="erro" id="erro-adm-cadastro"></div>
+      <div class="sucesso hidden" id="sucesso-adm-cadastro">Professor/Tutor cadastrado com sucesso!</div>
+
+      <button class="btn btn-green" type="button" id="btn-adm-cadastrar-prof">Cadastrar Professor / Tutoria</button>
+
+      <hr style="margin:20px 0; border:0; border-top:1px dashed var(--rule);">
+
+      <p class="sub"><strong>Professores Cadastrados:</strong></p>
+      <div class="tabela-scroll">
+        <table class="boletim-table">
+          <thead>
+            <tr>
+              <th>Usuário</th>
+              <th>Tutoria / Sala</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="adm-professores-corpo"></tbody>
+        </table>
+      </div>
+
+      <button class="btn btn-ghost" type="button" onclick="trocarPerfil('adm')">← Sair do Administrador</button>
+    </div>
+
+  </div> <!-- /ficha -->
+
+</div> <!-- /stage -->
+
+<script>
   const SENHA_ADM_MESTRE = "Admin@2026";
 
   const LISTA_MATERIAS = [
@@ -965,10 +865,9 @@
     "Geografia", "História", "Inglês", "Matemática", "Português", "Química"
   ];
 
-  let estadoAluno = { turma: "", nome: "", ra: "", digito: "", materiaSelecionada: "" };
+  let estadoAluno = { tutoria: "", nome: "", ra: "", digito: "", materiaSelecionada: "" };
   let estadoPais = { nome: "", telefone: "", logado: false };
-  let estadoProf = { usuario: "", alunoSelecionado: null, materiaSelecionada: "" };
-  let estadoDir = { usuario: "", alunoSelecionado: null };
+  let estadoProf = { usuario: "", tutoria: "", alunoSelecionado: null, materiaSelecionada: "" };
   let estadoAdm = { usuario: "", logado: false };
 
   function obterBancoUsuarios() {
@@ -978,17 +877,15 @@
     }
     return [
       {
-        turma: "1A",
+        turma: "Tutoria Prof. Carlos",
         nome: "Gabriel Santos",
         ra: "1234567890123",
         digito: "0",
-        senhaHash: "",
         responsavelNome: "Carlos Santos",
         responsavelTelefone: "11999998888",
         materias: {
           "Matemática": [8.5, 7.0, 9.0, 8.0],
-          "Português": [7.0, 8.0, 7.5, 8.5],
-          "História": [9.0, 9.5, 8.0, 9.0]
+          "Português": [7.0, 8.0, 7.5, 8.5]
         }
       }
     ];
@@ -998,12 +895,18 @@
     localStorage.setItem('banco_alunos', JSON.stringify(banco));
   }
 
-  async function calcularHashSenha(senha) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(senha);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  function obterBancoProfessores() {
+    const local = localStorage.getItem('banco_professores');
+    if (local) {
+      try { return JSON.parse(local); } catch (e) { console.error(e); }
+    }
+    return [
+      { usuario: "prof_carlos", senha: "123", tutoria: "Tutoria Prof. Carlos" }
+    ];
+  }
+
+  function salvarBancoProfessores(banco) {
+    localStorage.setItem('banco_professores', JSON.stringify(banco));
   }
 
   function normalizarTelefone(tel) {
@@ -1040,8 +943,8 @@
       document.querySelectorAll('.profile-btn')[3].classList.add('active');
       document.getElementById('steps-adm').classList.remove('hidden');
       if (estadoAdm.logado) {
-        carregarTabelaDiretor('TODAS');
-        mostrarTela('dir-turmas');
+        carregarProfessoresAdm();
+        mostrarTela('adm-painel');
       } else {
         mostrarTela('adm-login');
       }
@@ -1063,7 +966,7 @@
   }
 
   // ==========================================
-  // LOGICA ADM (ADMINISTRADOR)
+  // LÓGICA DO ADMIN (CADASTRAR PROFESSORES)
   // ==========================================
   document.getElementById('btn-login-adm').addEventListener('click', () => {
     const usuario = document.getElementById('adm-usuario').value.trim();
@@ -1079,19 +982,302 @@
     if (senha === SENHA_ADM_MESTRE) {
       estadoAdm.usuario = usuario;
       estadoAdm.logado = true;
-      document.getElementById('dir-boas-vindas').textContent = `Administrador: ${usuario} (Acesso Mestre)`;
-      carregarTabelaDiretor('TODAS');
-      mostrarTela('dir-turmas');
+      carregarProfessoresAdm();
+      mostrarTela('adm-painel');
     } else {
       erro.textContent = "Senha de Administrador incorreta!";
+    }
+  });
+
+  document.getElementById('btn-adm-cadastrar-prof').addEventListener('click', () => {
+    const usuarioProf = document.getElementById('adm-prof-usuario').value.trim();
+    const senhaProf = document.getElementById('adm-prof-senha').value.trim();
+    const tutoriaProf = document.getElementById('adm-prof-tutoria').value.trim();
+
+    const erro = document.getElementById('erro-adm-cadastro');
+    const sucesso = document.getElementById('sucesso-adm-cadastro');
+    erro.textContent = "";
+    sucesso.classList.add('hidden');
+
+    if (!usuarioProf || !senhaProf || !tutoriaProf) {
+      erro.textContent = "Preencha usuário, senha e o nome da tutoria.";
+      return;
+    }
+
+    let prods = obterBancoProfessores();
+    if (prods.some(p => p.usuario.toLowerCase() === usuarioProf.toLowerCase())) {
+      erro.textContent = "Já existe um professor/tutor com este nome de usuário.";
+      return;
+    }
+
+    prods.push({ usuario: usuarioProf, senha: senhaProf, tutoria: tutoriaProf });
+    salvarBancoProfessores(prods);
+
+    document.getElementById('adm-prof-usuario').value = "";
+    document.getElementById('adm-prof-senha').value = "";
+    document.getElementById('adm-prof-tutoria').value = "";
+
+    sucesso.classList.remove('hidden');
+    carregarProfessoresAdm();
+  });
+
+  function carregarProfessoresAdm() {
+    const prods = obterBancoProfessores();
+    const corpo = document.getElementById('adm-professores-corpo');
+    corpo.innerHTML = "";
+
+    if (prods.length === 0) {
+      corpo.innerHTML = `<tr><td colspan="3" class="vazio-tabela">Nenhum professor cadastrado.</td></tr>`;
+      return;
+    }
+
+    prods.forEach(p => {
+      corpo.innerHTML += `
+        <tr>
+          <td>${p.usuario}</td>
+          <td>${p.tutoria}</td>
+          <td><button class="btn-excluir" onclick="excluirProfessor('${p.usuario}')">Excluir</button></td>
+        </tr>
+      `;
+    });
+  }
+
+  function excluirProfessor(usuario) {
+    if (confirm(`Deseja realmente excluir o professor ${usuario}?`)) {
+      let prods = obterBancoProfessores();
+      prods = prods.filter(p => p.usuario !== usuario);
+      salvarBancoProfessores(prods);
+      carregarProfessoresAdm();
+    }
+  }
+
+  // ==========================================
+  // LÓGICA DO PROFESSOR (TUTORIA EXCLUSIVA)
+  // ==========================================
+  document.getElementById('btn-login-prof').addEventListener('click', () => {
+    const usuario = document.getElementById('prof-nome').value.trim();
+    const senha = document.getElementById('prof-senha').value;
+    const erro = document.getElementById('erro-prof-login');
+
+    erro.textContent = "";
+    if (!usuario || !senha) {
+      erro.textContent = "Preencha usuário e senha.";
+      return;
+    }
+
+    const professores = obterBancoProfessores();
+    const profEncontrado = professores.find(p => p.usuario.toLowerCase() === usuario.toLowerCase() && p.senha === senha);
+
+    if (!profEncontrado) {
+      erro.textContent = "Usuário ou senha do tutor incorretos.";
+      return;
+    }
+
+    estadoProf.usuario = profEncontrado.usuario;
+    estadoProf.tutoria = profEncontrado.tutoria;
+
+    document.getElementById('prof-boas-vindas').textContent = `Tutor(a): ${profEncontrado.usuario} | Tutoria: ${profEncontrado.tutoria}`;
+    document.getElementById('add-aluno-tutoria-info').textContent = `Tutoria: ${profEncontrado.tutoria}`;
+
+    carregarAlunosProfessor();
+    mostrarTela('prof-alunos');
+  });
+
+  function carregarAlunosProfessor() {
+    const banco = obterBancoUsuarios();
+    // Filtra apenas os alunos pertencentes à tutoria deste professor
+    const alunosDaTutoria = banco.filter(u => u.turma === estadoProf.tutoria);
+    const corpo = document.getElementById('prof-alunos-corpo');
+    corpo.innerHTML = "";
+
+    if (alunosDaTutoria.length === 0) {
+      corpo.innerHTML = `<tr><td colspan="3" class="vazio-tabela">Nenhum aluno cadastrado nesta tutoria.</td></tr>`;
+      return;
+    }
+
+    alunosDaTutoria.forEach(aluno => {
+      corpo.innerHTML += `
+        <tr>
+          <td>${aluno.nome}</td>
+          <td>${aluno.ra}-${aluno.digito || '0'}</td>
+          <td class="acoes-cell">
+            <button class="btn-selecionar" onclick="selecionarAlunoProf('${aluno.ra}')">Gerenciar / Lançar</button>
+            <button class="btn-editar" onclick='abrirEditarAluno(${JSON.stringify(aluno)})'>Editar</button>
+            <button class="btn-excluir" onclick="excluirAlunoProf('${aluno.ra}')">Excluir</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  function selecionarAlunoProf(ra) {
+    const banco = obterBancoUsuarios();
+    const aluno = banco.find(u => u.ra === ra);
+    if (!aluno) return;
+
+    estadoProf.alunoSelecionado = aluno;
+    document.getElementById('prof-aluno-selecionado-texto').textContent = `${aluno.nome} (${aluno.turma}) — RA: ${aluno.ra}`;
+    mostrarTela('prof-materia');
+  }
+
+  function excluirAlunoProf(ra) {
+    if (confirm("Tem certeza que deseja remover este aluno da sua tutoria?")) {
+      let banco = obterBancoUsuarios();
+      banco = banco.filter(u => u.ra !== ra);
+      salvarBanco(banco);
+      carregarAlunosProfessor();
+    }
+  }
+
+  document.getElementById('btn-salvar-novo-aluno').addEventListener('click', () => {
+    const nome = document.getElementById('dir-add-nome').value.trim();
+    const ra = document.getElementById('dir-add-ra').value.trim();
+    const digito = document.getElementById('dir-add-digito').value.trim();
+    const senha = document.getElementById('dir-add-senha').value;
+    const respNome = document.getElementById('dir-add-resp-nome').value.trim();
+    const respTel = normalizarTelefone(document.getElementById('dir-add-resp-tel').value);
+
+    const erro = document.getElementById('erro-dir-add');
+    const sucesso = document.getElementById('sucesso-dir-add');
+    erro.textContent = "";
+    sucesso.classList.add('hidden');
+
+    if (!nome || !ra || !digito) {
+      erro.textContent = "Preencha ao menos Nome, RA e Dígito.";
+      return;
+    }
+
+    let banco = obterBancoUsuarios();
+    if (banco.some(u => u.ra === ra)) {
+      erro.textContent = "Já existe um aluno cadastrado com este RA.";
+      return;
+    }
+
+    banco.push({
+      turma: estadoProf.tutoria,
+      nome,
+      ra,
+      digito,
+      responsavelNome: respNome,
+      responsavelTelefone: respTel,
+      materias: {}
+    });
+
+    salvarBanco(banco);
+    sucesso.classList.remove('hidden');
+
+    document.getElementById('dir-add-nome').value = "";
+    document.getElementById('dir-add-ra').value = "";
+    document.getElementById('dir-add-digito').value = "";
+    document.getElementById('dir-add-senha').value = "";
+    document.getElementById('dir-add-resp-nome').value = "";
+    document.getElementById('dir-add-resp-tel').value = "";
+
+    carregarAlunosProfessor();
+  });
+
+  function abrirEditarAluno(aluno) {
+    estadoProf.alunoSelecionado = aluno;
+    document.getElementById('dir-edit-nome').value = aluno.nome;
+    document.getElementById('dir-edit-ra').value = aluno.ra;
+    document.getElementById('dir-edit-digito').value = aluno.digito;
+    document.getElementById('dir-edit-resp-nome').value = aluno.responsavelNome || "";
+    document.getElementById('dir-edit-resp-tel').value = aluno.responsavelTelefone || "";
+    document.getElementById('erro-dir-edit').textContent = "";
+    document.getElementById('sucesso-dir-edit').classList.add('hidden');
+    mostrarTela('dir-edit-aluno');
+  }
+
+  document.getElementById('btn-salvar-edit-aluno').addEventListener('click', () => {
+    const nome = document.getElementById('dir-edit-nome').value.trim();
+    const ra = document.getElementById('dir-edit-ra').value.trim();
+    const digito = document.getElementById('dir-edit-digito').value.trim();
+    const erro = document.getElementById('erro-dir-edit');
+
+    if (!nome || !ra || !digito) { erro.textContent = "Preencha todos os campos."; return; }
+
+    const respNome = document.getElementById('dir-edit-resp-nome').value.trim();
+    const respTel = normalizarTelefone(document.getElementById('dir-edit-resp-tel').value);
+
+    let banco = obterBancoUsuarios();
+    const idx = banco.findIndex(u => u.ra === estadoProf.alunoSelecionado.ra);
+    if (idx >= 0) {
+      banco[idx].nome = nome;
+      banco[idx].ra = ra;
+      banco[idx].digito = digito;
+      banco[idx].responsavelNome = respNome;
+      banco[idx].responsavelTelefone = respTel;
+      salvarBanco(banco);
+      estadoProf.alunoSelecionado = banco[idx];
+      document.getElementById('sucesso-dir-edit').classList.remove('hidden');
+      carregarAlunosProfessor();
+    }
+  });
+
+  document.getElementById('btn-prof-materia-continuar').addEventListener('click', () => {
+    const mat = document.getElementById('prof-materia-select').value;
+    const erro = document.getElementById('erro-prof-materia');
+    erro.textContent = "";
+
+    if (!mat) {
+      erro.textContent = "Selecione uma matéria.";
+      return;
+    }
+
+    estadoProf.materiaSelecionada = mat;
+    document.getElementById('prof-sub-notas').textContent = `Aluno: ${estadoProf.alunoSelecionado.nome} | Matéria: ${mat}`;
+
+    const aluno = estadoProf.alunoSelecionado;
+    const notas = (aluno.materias && aluno.materias[mat]) ? aluno.materias[mat] : ["", "", "", ""];
+
+    document.getElementById('prof-nota1').value = notas[0] !== undefined ? notas[0] : "";
+    document.getElementById('prof-nota2').value = notas[1] !== undefined ? notas[1] : "";
+    document.getElementById('prof-nota3').value = notas[2] !== undefined ? notas[2] : "";
+    document.getElementById('prof-nota4').value = notas[3] !== undefined ? notas[3] : "";
+
+    document.getElementById('erro-prof-notas').textContent = "";
+    document.getElementById('sucesso-prof-notas').classList.add('hidden');
+    mostrarTela('prof-notas');
+  });
+
+  document.getElementById('btn-salvar-notas-prof').addEventListener('click', () => {
+    const ids = ['prof-nota1', 'prof-nota2', 'prof-nota3', 'prof-nota4'];
+    const notas = [];
+    const erroEl = document.getElementById('erro-prof-notas');
+    const sucessoEl = document.getElementById('sucesso-prof-notas');
+    erroEl.textContent = "";
+    sucessoEl.classList.add('hidden');
+
+    for (const id of ids) {
+      const val = document.getElementById(id).value;
+      if (val === "") {
+        erroEl.textContent = "Preencha todas as 4 notas.";
+        return;
+      }
+      const num = parseFloat(val);
+      if (isNaN(num) || num < 0 || num > 10) {
+        erroEl.textContent = "Notas devem ser de 0 a 10.";
+        return;
+      }
+      notas.push(num);
+    }
+
+    let banco = obterBancoUsuarios();
+    const idx = banco.findIndex(u => u.ra === estadoProf.alunoSelecionado.ra);
+    if (idx >= 0) {
+      if (!banco[idx].materias) banco[idx].materias = {};
+      banco[idx].materias[estadoProf.materiaSelecionada] = notas;
+      salvarBanco(banco);
+      estadoProf.alunoSelecionado = banco[idx];
+      sucessoEl.classList.remove('hidden');
     }
   });
 
   // ==========================================
   // LÓGICA DO ALUNO
   // ==========================================
-  document.getElementById('btn-login-aluno').addEventListener('click', async () => {
-    const turma = document.getElementById('aluno-turma-select').value;
+  document.getElementById('btn-login-aluno').addEventListener('click', () => {
+    const tutoria = document.getElementById('aluno-tutoria-nome').value.trim();
     const nome = document.getElementById('aluno-nome').value.trim();
     const ra = document.getElementById('aluno-ra').value.trim();
     const digito = document.getElementById('aluno-digito').value.trim();
@@ -1099,20 +1285,20 @@
     const erro = document.getElementById('erro-aluno-login');
 
     erro.textContent = "";
-    if (!turma || !nome || !ra || !digito || !senha) {
+    if (!tutoria || !nome || !ra || !digito || !senha) {
       erro.textContent = "Preencha todos os campos para continuar.";
       return;
     }
 
     const banco = obterBancoUsuarios();
-    const aluno = banco.find(u => u.ra === ra && u.digito === digito && u.turma === turma);
+    const aluno = banco.find(u => u.ra === ra && u.digito === digito && u.turma.toLowerCase() === tutoria.toLowerCase());
 
     if (!aluno) {
-      erro.textContent = "Aluno não encontrado. Verifique os dados.";
+      erro.textContent = "Aluno não encontrado. Verifique a Tutoria e seus dados.";
       return;
     }
 
-    estadoAluno = { turma, nome: aluno.nome, ra, digito, materiaSelecionada: "" };
+    estadoAluno = { tutoria: aluno.turma, nome: aluno.nome, ra, digito, materiaSelecionada: "" };
     mostrarTela('aluno-materia');
   });
 
@@ -1226,7 +1412,7 @@
     const aluno = banco.find(u => u.ra === ra);
     if (!aluno) return;
 
-    document.getElementById('pais-filho-nome').textContent = `${aluno.nome} (${aluno.turma || 'Sem turma'})`;
+    document.getElementById('pais-filho-nome').textContent = `${aluno.nome} (${aluno.turma || 'Tutoria não especificada'})`;
     const corpo = document.getElementById('pais-boletim-corpo');
     corpo.innerHTML = "";
 
@@ -1257,123 +1443,11 @@
       `;
     });
 
-    const mensagem = encodeURIComponent(`Olá, sou ${estadoPais.nome}, responsável pelo aluno ${aluno.nome} (${aluno.turma}). Gostaria de conversar sobre o boletim.`);
+    const mensagem = encodeURIComponent(`Olá, sou ${estadoPais.nome}, responsável pelo aluno ${aluno.nome} (${aluno.turma}). Gostaria de conversar sobre a tutoria.`);
     document.getElementById('link-whatsapp-prof').href = `https://api.whatsapp.com/send?text=${mensagem}`;
 
     mostrarTela('pais-boletim');
   }
-
-  // ==========================================
-  // LÓGICA DO PROFESSOR E TUTORIA
-  // ==========================================
-  document.getElementById('btn-login-prof').addEventListener('click', () => {
-    const nome = document.getElementById('prof-nome').value.trim();
-    const senha = document.getElementById('prof-senha').value;
-    const erro = document.getElementById('erro-prof-login');
-
-    erro.textContent = "";
-    if (!nome || !senha) {
-      erro.textContent = "Preencha usuário e senha.";
-      return;
-    }
-
-    estadoProf.usuario = nome;
-    document.getElementById('prof-boas-vindas').textContent = `Professor(a): ${nome}`;
-    carregarAlunosProfessor();
-    mostrarTela('prof-alunos');
-  });
-
-  function carregarAlunosProfessor() {
-    const banco = obterBancoUsuarios();
-    const corpo = document.getElementById('prof-alunos-corpo');
-    corpo.innerHTML = "";
-
-    if (banco.length === 0) {
-      corpo.innerHTML = `<tr><td colspan="3" class="vazio-tabela">Nenhum aluno cadastrado.</td></tr>`;
-      return;
-    }
-
-    banco.forEach(aluno => {
-      corpo.innerHTML += `
-        <tr>
-          <td>${aluno.nome}</td>
-          <td>${aluno.turma || '-'}</td>
-          <td>
-            <button class="btn-selecionar" onclick="selecionarAlunoProf('${aluno.ra}')">Gerenciar / Lançar</button>
-          </td>
-        </tr>
-      `;
-    });
-  }
-
-  function selecionarAlunoProf(ra) {
-    const banco = obterBancoUsuarios();
-    const aluno = banco.find(u => u.ra === ra);
-    if (!aluno) return;
-
-    estadoProf.alunoSelecionado = aluno;
-    document.getElementById('prof-aluno-selecionado-texto').textContent = `${aluno.nome} (${aluno.turma || 'Sem turma'}) — RA: ${aluno.ra}`;
-    mostrarTela('prof-materia');
-  }
-
-  document.getElementById('btn-prof-materia-continuar').addEventListener('click', () => {
-    const mat = document.getElementById('prof-materia-select').value;
-    const erro = document.getElementById('erro-prof-materia');
-    erro.textContent = "";
-
-    if (!mat) {
-      erro.textContent = "Selecione uma matéria.";
-      return;
-    }
-
-    estadoProf.materiaSelecionada = mat;
-    document.getElementById('prof-sub-notas').textContent = `Aluno: ${estadoProf.alunoSelecionado.nome} | Matéria: ${mat}`;
-
-    const aluno = estadoProf.alunoSelecionado;
-    const notas = (aluno.materias && aluno.materias[mat]) ? aluno.materias[mat] : ["", "", "", ""];
-
-    document.getElementById('prof-nota1').value = notas[0] !== undefined ? notas[0] : "";
-    document.getElementById('prof-nota2').value = notas[1] !== undefined ? notas[1] : "";
-    document.getElementById('prof-nota3').value = notas[2] !== undefined ? notas[2] : "";
-    document.getElementById('prof-nota4').value = notas[3] !== undefined ? notas[3] : "";
-
-    document.getElementById('erro-prof-notas').textContent = "";
-    document.getElementById('sucesso-prof-notas').classList.add('hidden');
-    mostrarTela('prof-notas');
-  });
-
-  document.getElementById('btn-salvar-notas-prof').addEventListener('click', () => {
-    const ids = ['prof-nota1', 'prof-nota2', 'prof-nota3', 'prof-nota4'];
-    const notas = [];
-    const erroEl = document.getElementById('erro-prof-notas');
-    const sucessoEl = document.getElementById('sucesso-prof-notas');
-    erroEl.textContent = "";
-    sucessoEl.classList.add('hidden');
-
-    for (const id of ids) {
-      const val = document.getElementById(id).value;
-      if (val === "") {
-        erroEl.textContent = "Preencha todas as 4 notas.";
-        return;
-      }
-      const num = parseFloat(val);
-      if (isNaN(num) || num < 0 || num > 10) {
-        erroEl.textContent = "Notas devem ser de 0 a 10.";
-        return;
-      }
-      notas.push(num);
-    }
-
-    let banco = obterBancoUsuarios();
-    const idx = banco.findIndex(u => u.ra === estadoProf.alunoSelecionado.ra);
-    if (idx >= 0) {
-      if (!banco[idx].materias) banco[idx].materias = {};
-      banco[idx].materias[estadoProf.materiaSelecionada] = notas;
-      salvarBanco(banco);
-      estadoProf.alunoSelecionado = banco[idx];
-      sucessoEl.classList.remove('hidden');
-    }
-  });
 
   // ==========================================
   // FUNÇÕES DE GERAR PDF
@@ -1385,7 +1459,7 @@
     document.getElementById('pdf-prof-aluno-nome').textContent = aluno.nome;
     document.getElementById('pdf-preview-nome').textContent = aluno.nome;
     document.getElementById('pdf-preview-ra').textContent = `${aluno.ra}-${aluno.digito || '0'}`;
-    document.getElementById('pdf-preview-turma').textContent = aluno.turma || "Sem Turma";
+    document.getElementById('pdf-preview-turma').textContent = aluno.turma || "Tutoria não informada";
 
     atualizarPreviewPDF();
     mostrarTela('prof-pdf');
@@ -1493,192 +1567,6 @@
       if (document.body.contains(containerTemp)) document.body.removeChild(containerTemp);
     });
   }
-
-  // ==========================================
-  // LÓGICA DA TUTORIA / TURMAS
-  // ==========================================
-  document.getElementById('btn-login-dir').addEventListener('click', async () => {
-    const nome = document.getElementById('dir-nome').value.trim();
-    const senha = document.getElementById('dir-senha').value;
-    const erro = document.getElementById('erro-dir-login');
-    erro.textContent = "";
-
-    if (!nome) {
-      erro.textContent = "Digite seu usuário.";
-      return;
-    }
-
-    estadoDir.usuario = nome;
-    document.getElementById('dir-boas-vindas').textContent = `Tutor(a): ${nome}`;
-    carregarTabelaDiretor('TODAS');
-    mostrarTela('dir-turmas');
-  });
-
-  document.getElementById('dir-turma-select').addEventListener('change', (e) => {
-    carregarTabelaDiretor(e.target.value);
-  });
-
-  function carregarTabelaDiretor(turmaFiltro) {
-    const banco = obterBancoUsuarios();
-    const corpo = document.getElementById('dir-turmas-corpo');
-    corpo.innerHTML = "";
-
-    const filtrados = (turmaFiltro === 'TODAS' || !turmaFiltro)
-      ? banco
-      : banco.filter(u => u.turma === turmaFiltro);
-
-    if (filtrados.length === 0) {
-      corpo.innerHTML = `<tr><td colspan="4" class="vazio-tabela">Nenhum aluno encontrado para este filtro.</td></tr>`;
-      return;
-    }
-
-    filtrados.forEach(aluno => {
-      corpo.innerHTML += `
-        <tr>
-          <td>${aluno.turma || '-'}</td>
-          <td>${aluno.nome}</td>
-          <td>${aluno.ra}-${aluno.digito || '0'}</td>
-          <td class="acoes-cell">
-            <button class="btn-selecionar" onclick='abrirBoletimDir(${JSON.stringify(aluno)})'>Ficha</button>
-            <button class="btn-editar" onclick='abrirEditarAluno(${JSON.stringify(aluno)})'>Editar</button>
-            <button class="btn-excluir" onclick="excluirAluno('${aluno.ra}')">Excluir</button>
-          </td>
-        </tr>
-      `;
-    });
-  }
-
-  function excluirAluno(ra) {
-    if (confirm("Tem certeza que deseja remover este aluno do sistema?")) {
-      let banco = obterBancoUsuarios();
-      banco = banco.filter(u => u.ra !== ra);
-      salvarBanco(banco);
-      carregarTabelaDiretor(document.getElementById('dir-turma-select').value);
-    }
-  }
-
-  function abrirBoletimDir(aluno) {
-    estadoDir.alunoSelecionado = aluno;
-    document.getElementById('dir-boletim-nome').textContent = `${aluno.nome} (${aluno.turma || "Sem Turma"})`;
-    const corpo = document.getElementById('dir-boletim-corpo');
-    corpo.innerHTML = "";
-
-    LISTA_MATERIAS.forEach(mat => {
-      const notas = (aluno.materias && aluno.materias[mat]) ? aluno.materias[mat] : [];
-      const n1 = notas[0] !== undefined ? notas[0].toFixed(1) : "-";
-      const n2 = notas[1] !== undefined ? notas[1].toFixed(1) : "-";
-      const n3 = notas[2] !== undefined ? notas[2].toFixed(1) : "-";
-      const n4 = notas[3] !== undefined ? notas[3].toFixed(1) : "-";
-
-      let media = "-";
-      let cor = "var(--ink)";
-      if (notas.length === 4) {
-        const m = notas.reduce((a, b) => a + b, 0) / 4;
-        media = m.toFixed(1);
-        cor = m >= 5.0 ? "var(--pen-green)" : "var(--pen-red)";
-      }
-
-      corpo.innerHTML += `
-        <tr>
-          <td>${mat}</td>
-          <td class="num">${n1}</td>
-          <td class="num">${n2}</td>
-          <td class="num">${n3}</td>
-          <td class="num">${n4}</td>
-          <td class="num" style="font-weight:bold; color:${cor}">${media}</td>
-        </tr>
-      `;
-    });
-
-    mostrarTela('dir-boletim');
-  }
-
-  document.getElementById('btn-salvar-novo-aluno').addEventListener('click', () => {
-    const turma = document.getElementById('dir-add-turma').value;
-    const nome = document.getElementById('dir-add-nome').value.trim();
-    const ra = document.getElementById('dir-add-ra').value.trim();
-    const digito = document.getElementById('dir-add-digito').value.trim();
-    const senha = document.getElementById('dir-add-senha').value;
-    const respNome = document.getElementById('dir-add-resp-nome').value.trim();
-    const respTel = normalizarTelefone(document.getElementById('dir-add-resp-tel').value);
-
-    const erro = document.getElementById('erro-dir-add');
-    const sucesso = document.getElementById('sucesso-dir-add');
-    erro.textContent = "";
-    sucesso.classList.add('hidden');
-
-    if (!turma || !nome || !ra || !digito) {
-      erro.textContent = "Preencha ao menos Turma, Nome, RA e Dígito.";
-      return;
-    }
-
-    let banco = obterBancoUsuarios();
-    if (banco.some(u => u.ra === ra)) {
-      erro.textContent = "Já existe um aluno cadastrado com este RA.";
-      return;
-    }
-
-    banco.push({
-      turma,
-      nome,
-      ra,
-      digito,
-      responsavelNome: respNome,
-      responsavelTelefone: respTel,
-      materias: {}
-    });
-
-    salvarBanco(banco);
-    sucesso.classList.remove('hidden');
-
-    // Limpar campos
-    document.getElementById('dir-add-nome').value = "";
-    document.getElementById('dir-add-ra').value = "";
-    document.getElementById('dir-add-digito').value = "";
-    document.getElementById('dir-add-senha').value = "";
-    document.getElementById('dir-add-resp-nome').value = "";
-    document.getElementById('dir-add-resp-tel').value = "";
-
-    carregarTabelaDiretor(document.getElementById('dir-turma-select').value);
-  });
-
-  function abrirEditarAluno(aluno) {
-    estadoDir.alunoSelecionado = aluno;
-    document.getElementById('dir-edit-nome').value = aluno.nome;
-    document.getElementById('dir-edit-ra').value = aluno.ra;
-    document.getElementById('dir-edit-digito').value = aluno.digito;
-    document.getElementById('dir-edit-resp-nome').value = aluno.responsavelNome || "";
-    document.getElementById('dir-edit-resp-tel').value = aluno.responsavelTelefone || "";
-    document.getElementById('erro-dir-edit').textContent = "";
-    document.getElementById('sucesso-dir-edit').classList.add('hidden');
-    mostrarTela('dir-edit-aluno');
-  }
-
-  document.getElementById('btn-salvar-edit-aluno').addEventListener('click', () => {
-    const nome = document.getElementById('dir-edit-nome').value.trim();
-    const ra = document.getElementById('dir-edit-ra').value.trim();
-    const digito = document.getElementById('dir-edit-digito').value.trim();
-    const erro = document.getElementById('erro-dir-edit');
-
-    if (!nome || !ra || !digito) { erro.textContent = "Preencha todos os campos."; return; }
-
-    const respNome = document.getElementById('dir-edit-resp-nome').value.trim();
-    const respTel = normalizarTelefone(document.getElementById('dir-edit-resp-tel').value);
-
-    let banco = obterBancoUsuarios();
-    const idx = banco.findIndex(u => u.ra === estadoDir.alunoSelecionado.ra);
-    if (idx >= 0) {
-      banco[idx].nome = nome;
-      banco[idx].ra = ra;
-      banco[idx].digito = digito;
-      banco[idx].responsavelNome = respNome;
-      banco[idx].responsavelTelefone = respTel;
-      salvarBanco(banco);
-      estadoDir.alunoSelecionado = banco[idx];
-      document.getElementById('sucesso-dir-edit').classList.remove('hidden');
-      carregarTabelaDiretor(document.getElementById('dir-turma-select').value);
-    }
-  });
 
   // Remover tela de carregamento inicial
   window.addEventListener('load', () => {
