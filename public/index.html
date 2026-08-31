@@ -206,5 +206,23 @@
     por <a href="eletric.html" class="autor-link">felipe</a> e <a href="anthony.html" class="autor-link">anthony</a>
   </footer>
 
+  <script>
+    const imgEsquerda = document.createElement('img');
+    imgEsquerda.src = 'imagem.png';
+    imgEsquerda.alt = 'Imagem Esquerda';
+
+    Object.assign(imgEsquerda.style, {
+      position: 'fixed',
+      left: '20px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      maxWidth: '120px',
+      height: 'auto',
+      zIndex: '1000'
+    });
+
+    document.body.appendChild(imgEsquerda);
+  </script>
+
 </body>
 </html>
