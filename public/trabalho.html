@@ -510,6 +510,13 @@
 </head>
 <body>
 
+<div id="tela-carregamento-servidor" style="position:fixed;inset:0;z-index:9999;background:var(--board);color:var(--chalk);display:flex;align-items:center;justify-content:center;font-family:'Special Elite',monospace;text-align:center;padding:20px;">
+  <div>
+    <div style="font-size:15px;letter-spacing:0.08em;">Carregando dados do servidor…</div>
+    <div id="erro-carregamento-servidor" style="margin-top:10px;font-size:12px;color:#e0a0a0;max-width:340px;"></div>
+  </div>
+</div>
+
 <div class="stage">
 
   <div class="board-header">
@@ -1068,57 +1075,109 @@
   </footer>
 </div>
 <script>
- // SENHAS DO SISTEMA
-  const SENHA_ALUNO = "@Josetalarico1";
-  const SENHA_PROFESSOR = "@Professor2026";
-  const SENHA_DIRETOR = "@Diretor2026"; 
+  // ==========================================
+  // SENHAS DO SISTEMA — armazenadas como HASH (SHA-256), nunca em texto puro
+  // ==========================================
+  const HASH_SENHA_ALUNO     = "9476cced1f9048437f42b7a8ab162f1235d05ea6cdf010a46dce592f6d2be996";
+  const HASH_SENHA_PROFESSOR = "3d0ca12124970397baedcc2cdb3d23401c76bd75cdbc2503df4034b13aa34f0a";
+  const HASH_SENHA_DIRETOR   = "f42fe071b4c74237cdaec598c7c439158f1531fb5adffff7b028d85ee0adadfd";
+
+  async function sha256Hex(texto) {
+    const buffer = new TextEncoder().encode(texto);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function senhaValida(digitada, hashEsperado) {
+    if(!digitada) return false;
+    const hash = await sha256Hex(digitada);
+    return hash === hashEsperado;
+  }
 
   const LISTA_MATERIAS = ["Artes", "Biologia", "Ciências", "Educação Física", "Física", "Geografia", "História", "Inglês", "Matemática", "Português", "Química"];
 
+  // ==========================================
+  // CAMADA DE DADOS COMPARTILHADOS — tudo é salvo no servidor (server.js)
+  // via /api/store/:chave, então qualquer alteração passa a valer para
+  // todo mundo que acessar o sistema, não só para quem alterou.
+  // ==========================================
+  const CHAVE_ALUNOS = 'boletim-alunos';
+  const CHAVE_KANBAN = 'boletim-kanban';
+  const INTERVALO_SINCRONIZACAO_MS = 6000;
+
+  async function apiGet(chave) {
+    const resp = await fetch(`/api/store/${chave}`);
+    if(!resp.ok) throw new Error(`Falha ao carregar "${chave}" do servidor.`);
+    return await resp.json();
+  }
+
+  async function apiSet(chave, valor) {
+    try {
+      const resp = await fetch(`/api/store/${chave}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(valor)
+      });
+      if(!resp.ok) throw new Error(`Falha ao salvar "${chave}" no servidor.`);
+    } catch(e) {
+      console.error(e);
+      alert('Não foi possível salvar no servidor. Verifique se o server.js está rodando e sua conexão, e tente novamente.');
+    }
+  }
+
   function resetarBanco() {
-      if(confirm("Tem certeza que deseja resetar todo o banco de dados para a configuração padrão?")) {
-          localStorage.removeItem('banco_usuarios');
-          inicializarBanco();
+      if(confirm("Tem certeza que deseja resetar todo o banco de dados para a configuração padrão? Isso afeta TODOS os usuários do sistema.")) {
+          bancoCache = JSON.parse(JSON.stringify(ALUNOS_DB_INICIAL));
+          apiSet(CHAVE_ALUNOS, bancoCache);
           alert("Banco de dados resetado com sucesso!");
           location.reload();
       }
   }
 
-  function inicializarBanco() {
-    let banco = localStorage.getItem('banco_usuarios');
-    if (!banco) {
-      const ALUNOS_DB_INICIAL = [
-        {
-          nome:"Ana Clara Silva",ra:"1000202400011",digito:"1",turma:"6A",
-          materias: {
-            "Matemática": [8.5, 7.0, 9.0, 8.0],
-            "Português": [6.0, 8.0, 7.5, 9.0],
-            "História": [9.0, 9.5, 8.0, 10.0]
-          }
-        },
-        {nome:"Arthur Santos Lima",ra:"1000202400012",digito:"2",turma:"6A",materias:{}},
-        {nome:"João Pedro Carvalho",ra:"1000202400021",digito:"1",turma:"6B",materias:{}},
-        {nome:"Alice Monteiro",ra:"1000202400031",digito:"1",turma:"7A",materias:{}},
-        {nome:"Miguel Ângelo",ra:"1000202400041",digito:"1",turma:"7B",materias:{}},
-        {nome:"André Luiz Soares",ra:"1000202400051",digito:"1",turma:"8A",materias:{}},
-        {nome:"Kauan Felipe",ra:"1000202400061",digito:"1",turma:"8B",materias:{}},
-        {nome:"Alan Kardec",ra:"1000202400071",digito:"1",turma:"9A",materias:{}},
-        {nome:"Marcos Paulo",ra:"1000202400081",digito:"1",turma:"9B",materias:{}},
-        {nome:"Alice Paulino",ra:"1000202400091",digito:"1",turma:"1A",materias:{}},
-        {nome:"Karen Junqueira",ra:"1000202400101",digito:"1",turma:"1B",materias:{}},
-        {nome:"Ulisses Campbell",ra:"1000202400111",digito:"1",turma:"1C",materias:{}},
-        {nome:"Elaine Mickely",ra:"1000202400121",digito:"1",turma:"2A",materias:{}},
-        {nome:"Otaviano Costa",ra:"1000202400131",digito:"1",turma:"2B",materias:{}},
-        {nome:"Alexandre Frota",ra:"1000202400141",digito:"1",turma:"3A-TECNICO",materias:{}},
-        {nome:"Klebber Toledo",ra:"1000202400151",digito:"1",turma:"3B-REGULAR",materias:{}}
-      ];
-      localStorage.setItem('banco_usuarios', JSON.stringify(ALUNOS_DB_INICIAL));
+  const ALUNOS_DB_INICIAL = [
+    {
+      nome:"Ana Clara Silva",ra:"1000202400011",digito:"1",turma:"6A",
+      materias: {
+        "Matemática": [8.5, 7.0, 9.0, 8.0],
+        "Português": [6.0, 8.0, 7.5, 9.0],
+        "História": [9.0, 9.5, 8.0, 10.0]
+      }
+    },
+    {nome:"Arthur Santos Lima",ra:"1000202400012",digito:"2",turma:"6A",materias:{}},
+    {nome:"João Pedro Carvalho",ra:"1000202400021",digito:"1",turma:"6B",materias:{}},
+    {nome:"Alice Monteiro",ra:"1000202400031",digito:"1",turma:"7A",materias:{}},
+    {nome:"Miguel Ângelo",ra:"1000202400041",digito:"1",turma:"7B",materias:{}},
+    {nome:"André Luiz Soares",ra:"1000202400051",digito:"1",turma:"8A",materias:{}},
+    {nome:"Kauan Felipe",ra:"1000202400061",digito:"1",turma:"8B",materias:{}},
+    {nome:"Alan Kardec",ra:"1000202400071",digito:"1",turma:"9A",materias:{}},
+    {nome:"Marcos Paulo",ra:"1000202400081",digito:"1",turma:"9B",materias:{}},
+    {nome:"Alice Paulino",ra:"1000202400091",digito:"1",turma:"1A",materias:{}},
+    {nome:"Karen Junqueira",ra:"1000202400101",digito:"1",turma:"1B",materias:{}},
+    {nome:"Ulisses Campbell",ra:"1000202400111",digito:"1",turma:"1C",materias:{}},
+    {nome:"Elaine Mickely",ra:"1000202400121",digito:"1",turma:"2A",materias:{}},
+    {nome:"Otaviano Costa",ra:"1000202400131",digito:"1",turma:"2B",materias:{}},
+    {nome:"Alexandre Frota",ra:"1000202400141",digito:"1",turma:"3A-TECNICO",materias:{}},
+    {nome:"Klebber Toledo",ra:"1000202400151",digito:"1",turma:"3B-REGULAR",materias:{}}
+  ];
+
+  let bancoCache = [];
+
+  async function inicializarBanco() {
+    let banco = await apiGet(CHAVE_ALUNOS);
+    if(!Array.isArray(banco) || banco.length === 0) {
+      banco = JSON.parse(JSON.stringify(ALUNOS_DB_INICIAL));
+      await apiSet(CHAVE_ALUNOS, banco);
     }
+    bancoCache = banco;
   }
-  inicializarBanco();
 
   function obterBancoUsuarios() {
-    return JSON.parse(localStorage.getItem('banco_usuarios')) || [];
+    return bancoCache;
+  }
+
+  function salvarBancoUsuarios(banco) {
+    bancoCache = banco;
+    apiSet(CHAVE_ALUNOS, banco);
   }
 
   // ESTADOS GLOBAIS DE SESSÃO
@@ -1204,7 +1263,7 @@
   // ==========================================
   // 1. LÓGICA DO ALUNO
   // ==========================================
-  document.getElementById('btn-login-aluno').addEventListener('click', () => {
+  document.getElementById('btn-login-aluno').addEventListener('click', async () => {
     const turma = document.getElementById('aluno-turma-select').value;
     const nome = document.getElementById('aluno-nome').value.trim();
     const ra = document.getElementById('aluno-ra').value.trim();
@@ -1222,7 +1281,7 @@
 
     if(!aluno){ erro.textContent = "Aluno não encontrado. Verifique o RA e dígito."; return; }
     if(aluno.turma !== turma){ erro.textContent = `Acesso negado! Este aluno pertence à turma ${aluno.turma}.`; return; }
-    if(senha !== SENHA_ALUNO){ erro.textContent = "Senha incorreta."; return; }
+    if(!(await senhaValida(senha, HASH_SENHA_ALUNO))){ erro.textContent = "Senha incorreta."; return; }
 
     estadoAluno.nome = aluno.nome;
     estadoAluno.ra = ra;
@@ -1377,12 +1436,12 @@
   // ==========================================
   // 3. LÓGICA DO PROFESSOR E GERADOR DE PDF
   // ==========================================
-  document.getElementById('btn-login-prof').addEventListener('click', () => {
+  document.getElementById('btn-login-prof').addEventListener('click', async () => {
     const nome = document.getElementById('prof-nome').value.trim();
     const senha = document.getElementById('prof-senha').value;
     const erro = document.getElementById('erro-prof-login');
     if(!nome){ erro.textContent = "Digite seu nome."; return; }
-    if(senha !== SENHA_PROFESSOR){ erro.textContent = "Senha incorreta."; return; }
+    if(!(await senhaValida(senha, HASH_SENHA_PROFESSOR))){ erro.textContent = "Senha incorreta."; return; }
     
     estadoProf.nome = nome;
     document.getElementById('prof-boas-vindas').textContent = `Prof. ${nome}, selecione um aluno.`;
@@ -1445,7 +1504,7 @@
       if(idx >= 0){
           if(!banco[idx].materias) banco[idx].materias = {};
           banco[idx].materias[estadoProf.materiaSelecionada] = notas;
-          localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+          salvarBancoUsuarios(banco);
           estadoProf.alunoSelecionado = banco[idx];
           sucessoEl.classList.remove('hidden');
       }
@@ -1587,14 +1646,14 @@
   // ==========================================
   // 4. LÓGICA DO DIRETOR
   // ==========================================
-  document.getElementById('btn-login-dir').addEventListener('click', () => {
+  document.getElementById('btn-login-dir').addEventListener('click', async () => {
     const nome = document.getElementById('dir-nome').value.trim();
     const senha = document.getElementById('dir-senha').value;
     const erro = document.getElementById('erro-dir-login');
     erro.textContent = "";
 
     if(!nome) { erro.textContent = "Digite seu usuário."; return; }
-    if(senha !== SENHA_DIRETOR) { erro.textContent = "Senha incorreta."; return; }
+    if(!(await senhaValida(senha, HASH_SENHA_DIRETOR))) { erro.textContent = "Senha incorreta."; return; }
 
     estadoDir.nome = nome;
     document.getElementById('dir-boas-vindas').textContent = `Bem-vindo(a), Diretor(a) ${nome}.`;
@@ -1653,7 +1712,7 @@
   function excluirAluno(ra, nome) {
     if(confirm(`Deseja excluir o aluno ${nome} (RA: ${ra}) do sistema?`)) {
       let banco = obterBancoUsuarios().filter(u => u.ra !== ra);
-      localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+      salvarBancoUsuarios(banco);
       carregarTabelaDiretor(document.getElementById('dir-turma-select').value);
     }
   }
@@ -1704,7 +1763,7 @@
     if(banco.some(u => u.ra === ra)){ erro.textContent = "Já existe aluno com este RA."; return; }
 
     banco.push({ nome, ra, digito, turma, materias: {} });
-    localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+    salvarBancoUsuarios(banco);
 
     sucesso.textContent = `Aluno ${nome} cadastrado!`;
     sucesso.classList.remove('hidden');
@@ -1738,24 +1797,32 @@
       banco[idx].nome = nome;
       banco[idx].ra = ra;
       banco[idx].digito = digito;
-      localStorage.setItem('banco_usuarios', JSON.stringify(banco));
+      salvarBancoUsuarios(banco);
       document.getElementById('sucesso-dir-edit').textContent = "Dados atualizados!";
       document.getElementById('sucesso-dir-edit').classList.remove('hidden');
     }
   });
 
 
-/* ===== KANBAN INTERATIVO ===== */
+/* ===== KANBAN INTERATIVO — compartilhado via servidor ===== */
 const KB = (() => {
-  const KEY='conect_escola_kanban_v1';
   let editId=null, filter='all', draggedId=null;
   const seed=[
     {id:crypto.randomUUID(),title:'Revisar conteúdo da próxima prova',desc:'Separe 30 minutos para revisar os pontos principais.',status:'todo',priority:'high',tag:'Estudos',due:''},
     {id:crypto.randomUUID(),title:'Fazer atividade de matemática',desc:'Resolver os exercícios pendentes.',status:'doing',priority:'medium',tag:'Matemática',due:''},
     {id:crypto.randomUUID(),title:'Entregar trabalho',desc:'Trabalho finalizado e pronto para entrega.',status:'done',priority:'low',tag:'Projeto',due:''}
   ];
-  function get(){try{return JSON.parse(localStorage.getItem(KEY))||seed}catch(e){return seed}}
-  function saveAll(a){localStorage.setItem(KEY,JSON.stringify(a))}
+  let cache = seed;
+  async function carregar(){
+    let dados = await apiGet(CHAVE_KANBAN);
+    if(!Array.isArray(dados) || dados.length === 0){
+      dados = seed;
+      await apiSet(CHAVE_KANBAN, dados);
+    }
+    cache = dados;
+  }
+  function get(){ return cache; }
+  function saveAll(a){ cache = a; apiSet(CHAVE_KANBAN, a); }
   function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
   function priorityLabel(p){return p==='high'?'🔥 Alta':p==='low'?'Baixa':'Média'}
   function matches(c){
@@ -1803,8 +1870,51 @@ const KB = (() => {
   });
   document.getElementById('kanban-overlay').addEventListener('click',e=>{if(e.target.id==='kanban-overlay')close()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-  return {open,close,newCard,edit,save,closeModal,render,setFilter,clearDone};
+  return {open,close,newCard,edit,save,closeModal,render,setFilter,clearDone,carregar};
 })();
+
+// ==========================================
+// INICIALIZAÇÃO DO SISTEMA — carrega os dados compartilhados do
+// servidor antes de liberar o uso, e mantém tudo sincronizado
+// em segundo plano para que alterações apareçam para todo mundo.
+// ==========================================
+async function iniciarSistema() {
+  const overlay = document.getElementById('tela-carregamento-servidor');
+  const erroBox = document.getElementById('erro-carregamento-servidor');
+  try {
+    await Promise.all([inicializarBanco(), KB.carregar()]);
+    overlay.style.display = 'none';
+    iniciarSincronizacaoEmSegundoPlano();
+  } catch (e) {
+    console.error('Falha ao carregar dados do servidor:', e);
+    erroBox.textContent = 'Não foi possível conectar ao servidor. Confirme que o server.js está rodando (node server.js) e recarregue a página.';
+  }
+}
+
+function iniciarSincronizacaoEmSegundoPlano() {
+  setInterval(async () => {
+    try {
+      const bancoAtual = await apiGet(CHAVE_ALUNOS);
+      if (Array.isArray(bancoAtual) && bancoAtual.length > 0) {
+        bancoCache = bancoAtual;
+        if (telas['dir-turmas'] && !telas['dir-turmas'].classList.contains('hidden')) {
+          carregarTabelaDiretor(document.getElementById('dir-turma-select').value);
+        }
+        if (telas['prof-alunos'] && !telas['prof-alunos'].classList.contains('hidden')) {
+          carregarTabelaProf();
+        }
+      }
+
+      await KB.carregar();
+      const overlayKb = document.getElementById('kanban-overlay');
+      if (overlayKb && overlayKb.classList.contains('open')) KB.render();
+    } catch (e) {
+      console.error('Falha na sincronização em segundo plano:', e);
+    }
+  }, INTERVALO_SINCRONIZACAO_MS);
+}
+
+iniciarSistema();
 
 </script>
 </body>
