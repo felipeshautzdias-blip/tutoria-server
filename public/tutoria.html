@@ -675,7 +675,10 @@
       <p class="sub" id="prof-boas-vindas"></p>
       
       <!-- Botão para alternar para a Gestão de Turmas / Tutoria -->
-      <button class="btn btn-green" type="button" style="margin-bottom:15px;" onclick="mostrarTela('dir-turmas')">📋 Ir para Gestão de Turmas & Tutoria</button>
+      <button class="btn btn-green" type="button" style="margin-bottom:10px;" onclick="mostrarTela('dir-turmas')">📋 Ir para Gestão de Turmas & Tutoria</button>
+
+      <!-- Botão de Administração — visível apenas para Diretor e Administradores -->
+      <button class="btn hidden" type="button" id="btn-ir-admin" style="margin-bottom:15px; background-color:#8a6318;" onclick="abrirAdminProfessores()">⚙️ Administração de Professores</button>
 
       <div class="tabela-scroll">
         <table class="boletim-table">
@@ -770,6 +773,43 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- TELA DE ADMINISTRAÇÃO DE PROFESSORES (Diretor / Administradores) -->
+    <div class="panel hidden" id="tela-admin-professores">
+      <p class="saudacao">Administração de Professores</p>
+      <p class="sub">Cadastre professores com nome de usuário e senha próprios. Apenas o Diretor e os Administradores acessam esta área.</p>
+
+      <div class="tabela-scroll">
+        <table class="boletim-table">
+          <thead><tr><th>Usuário</th><th>Função</th><th>Ações</th></tr></thead>
+          <tbody id="admin-professores-corpo"></tbody>
+        </table>
+      </div>
+
+      <hr style="margin:20px 0; border:0; border-top:1px dashed var(--rule);">
+
+      <p class="sub" style="margin-bottom:6px;"><strong>Adicionar novo professor</strong></p>
+      <div class="campo">
+        <label for="admin-novo-nome">Nome de usuário</label>
+        <input type="text" id="admin-novo-nome" placeholder="Ex: joana">
+      </div>
+      <div class="campo">
+        <label for="admin-novo-senha">Senha</label>
+        <input type="password" id="admin-novo-senha" autocomplete="off" placeholder="Defina uma senha">
+      </div>
+      <div class="campo">
+        <label for="admin-novo-papel">Função</label>
+        <select id="admin-novo-papel">
+          <option value="professor">Professor</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+      <div class="erro" id="erro-admin-novo"></div>
+      <div class="sucesso hidden" id="sucesso-admin-novo"></div>
+      <button class="btn btn-green" type="button" id="btn-salvar-novo-professor">Cadastrar Professor</button>
+
+      <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-alunos')" style="margin-top:16px;">← Voltar</button>
     </div>
 
     <!-- ============================================== -->
@@ -1006,16 +1046,80 @@
     } catch (e) {
       console.error('Falha ao carregar dados do servidor:', e);
     }
+  }
+
+  // ===== CONTAS DE PROFESSORES / ADMINISTRAÇÃO =====
+  // Guardadas via /api/store/professores (endpoint genérico do server.js)
+  const API_URL_PROF = '/api/store/professores';
+  let professoresCache = [];
+
+  function obterProfessores() {
+    return professoresCache;
+  }
+
+  function rotuloPapel(papel) {
+    if (papel === 'diretor') return 'Diretor';
+    if (papel === 'admin') return 'Administrador';
+    return 'Professor';
+  }
+
+  async function salvarProfessores(lista) {
+    professoresCache = lista;
+    try {
+      await fetch(API_URL_PROF, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lista)
+      });
+    } catch (e) {
+      console.error('Falha ao salvar professores:', e);
+      alert('Não foi possível salvar os dados de professores no servidor.');
+    }
+  }
+
+  // Cria as contas padrão (Diretor + Administradores) apenas se ainda não existir nenhuma conta
+  async function seedProfessoresPadrao() {
+    const diretorHash = await calcularHashSenha('@Diretor2026');
+    const felipeHash = await calcularHashSenha('eletric');
+    const anthonyHash = await calcularHashSenha('thony@2326');
+    professoresCache = [
+      { nome: 'rodrigo', senhaHash: diretorHash, papel: 'diretor' },
+      { nome: 'felipe', senhaHash: felipeHash, papel: 'admin' },
+      { nome: 'anthony', senhaHash: anthonyHash, papel: 'admin' }
+    ];
+    await salvarProfessores(professoresCache);
+  }
+
+  async function carregarProfessoresDoServidor() {
+    try {
+      const resp = await fetch(API_URL_PROF);
+      if (resp.ok) {
+        professoresCache = await resp.json();
+      }
+    } catch (e) {
+      console.error('Falha ao carregar professores:', e);
+    }
+    if (!Array.isArray(professoresCache) || professoresCache.length === 0) {
+      await seedProfessoresPadrao();
+    }
+  }
+
+  async function inicializarDados() {
+    await Promise.all([carregarBancoDoServidor(), carregarProfessoresDoServidor()]);
     const overlay = document.getElementById('overlay-carregando');
     if (overlay) overlay.remove();
   }
-  carregarBancoDoServidor();
+  inicializarDados();
 
   // Sincroniza com o servidor periodicamente para refletir alterações feitas por outras pessoas
   setInterval(async () => {
     try {
       const resp = await fetch(API_URL);
       if (resp.ok) bancoCache = await resp.json();
+    } catch (e) { /* silencioso: mantém os dados que já estão em cache */ }
+    try {
+      const respProf = await fetch(API_URL_PROF);
+      if (respProf.ok) professoresCache = await respProf.json();
     } catch (e) { /* silencioso: mantém os dados que já estão em cache */ }
   }, 15000);
 
@@ -1039,7 +1143,7 @@
   // ESTADOS GLOBAIS DE SESSÃO
   const estadoAluno = { nome:"", ra:"", digito:"", turma:"", materia:"", notas:[] };
   const estadoPais = { nome:"", telefone:"", filhoSelecionado: null, filhosVinculados: [] };
-  const estadoProf = { nome:"", alunoSelecionado: null, materiaSelecionada: "" };
+  const estadoProf = { nome:"", papel:"", alunoSelecionado: null, materiaSelecionada: "" };
   const estadoDir = { nome:"", alunoSelecionado: null };
 
   const telas = {
@@ -1056,6 +1160,7 @@
     'prof-materia': document.getElementById('tela-prof-materia'),
     'prof-notas': document.getElementById('tela-prof-notas'),
     'prof-pdf': document.getElementById('tela-prof-pdf'),
+    'admin-professores': document.getElementById('tela-admin-professores'),
 
     'dir-login': document.getElementById('tela-dir-login'),
     'dir-turmas': document.getElementById('tela-dir-turmas'),
@@ -1085,9 +1190,11 @@
       mostrarTela('pais-login');
     } else if(perfil === 'professor') {
       document.querySelectorAll('.profile-btn')[2].classList.add('active');
+      document.getElementById('btn-ir-admin').classList.add('hidden');
       mostrarTela('prof-login');
     } else if(perfil === 'tutoria') {
       document.querySelectorAll('.profile-btn')[2].classList.add('active');
+      document.getElementById('btn-ir-admin').classList.add('hidden');
       mostrarTela('prof-login');
     }
   }
@@ -1326,16 +1433,25 @@
   // 3. LÓGICA DO PROFESSOR E GERADOR DE PDF
   // ==========================================
   document.getElementById('btn-login-prof').addEventListener('click', async () => {
-    const nome = document.getElementById('prof-nome').value.trim();
+    const nomeDigitado = document.getElementById('prof-nome').value.trim();
     const senha = document.getElementById('prof-senha').value;
     const erro = document.getElementById('erro-prof-login');
-    if(!nome){ erro.textContent = "Digite seu nome."; return; }
+    erro.textContent = "";
+
+    if(!nomeDigitado){ erro.textContent = "Digite seu usuário."; return; }
+    if(!senha){ erro.textContent = "Digite sua senha."; return; }
+
+    const professores = obterProfessores();
+    const conta = professores.find(p => p.nome.toLowerCase() === nomeDigitado.toLowerCase());
+    if(!conta){ erro.textContent = "Usuário não encontrado."; return; }
 
     const hashDigitado = await calcularHashSenha(senha);
-    if(hashDigitado !== HASH_SENHA_PROFESSOR && hashDigitado !== HASH_SENHA_DIRETOR){ erro.textContent = "Senha incorreta."; return; }
-    
-    estadoProf.nome = nome;
-    document.getElementById('prof-boas-vindas').textContent = `Bem-vindo(a), ${nome}. Selecione um aluno ou acesse a tutoria.`;
+    if(hashDigitado !== conta.senhaHash){ erro.textContent = "Senha incorreta."; return; }
+
+    estadoProf.nome = conta.nome;
+    estadoProf.papel = conta.papel;
+    document.getElementById('prof-boas-vindas').textContent = `Bem-vindo(a), ${conta.nome} (${rotuloPapel(conta.papel)}). Selecione um aluno ou acesse a tutoria.`;
+    document.getElementById('btn-ir-admin').classList.toggle('hidden', !(conta.papel === 'admin' || conta.papel === 'diretor'));
     carregarTabelaProf();
     mostrarTela('prof-alunos');
   });
@@ -1532,6 +1648,98 @@
       if(document.body.contains(containerTemp)) document.body.removeChild(containerTemp);
     });
   }
+
+  // ==========================================
+  // 3.1 LÓGICA DA ADMINISTRAÇÃO DE PROFESSORES
+  // ==========================================
+  function abrirAdminProfessores() {
+    carregarTabelaAdmin();
+    mostrarTela('admin-professores');
+  }
+
+  function carregarTabelaAdmin() {
+    const corpo = document.getElementById('admin-professores-corpo');
+    corpo.innerHTML = "";
+    const professores = obterProfessores();
+
+    professores.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${p.nome}</td><td>${rotuloPapel(p.papel)}</td>`;
+
+      const tdAcoes = document.createElement('td');
+      tdAcoes.className = 'acoes-cell';
+
+      const btnSenha = document.createElement('button');
+      btnSenha.className = 'btn-editar'; btnSenha.textContent = 'Alterar Senha';
+      btnSenha.onclick = () => alterarSenhaProfessor(p.nome);
+      tdAcoes.appendChild(btnSenha);
+
+      // A conta do Diretor não pode ser excluída pela tela de administração
+      if(p.papel !== 'diretor') {
+        const btnDel = document.createElement('button');
+        btnDel.className = 'btn-excluir'; btnDel.textContent = 'Excluir';
+        btnDel.onclick = () => excluirProfessor(p.nome);
+        tdAcoes.appendChild(btnDel);
+      }
+
+      tr.appendChild(tdAcoes);
+      corpo.appendChild(tr);
+    });
+  }
+
+  async function alterarSenhaProfessor(nome) {
+    const novaSenha = prompt(`Digite a nova senha para "${nome}":`);
+    if(!novaSenha) return;
+
+    const novoHash = await calcularHashSenha(novaSenha);
+    let professores = obterProfessores();
+    const idx = professores.findIndex(p => p.nome === nome);
+    if(idx >= 0) {
+      professores[idx].senhaHash = novoHash;
+      await salvarProfessores(professores);
+      alert('Senha atualizada com sucesso!');
+      carregarTabelaAdmin();
+    }
+  }
+
+  async function excluirProfessor(nome) {
+    if(nome.toLowerCase() === estadoProf.nome.toLowerCase()) {
+      alert('Você não pode excluir sua própria conta enquanto está logado.');
+      return;
+    }
+    if(confirm(`Deseja excluir o usuário "${nome}"?`)) {
+      let professores = obterProfessores().filter(p => p.nome !== nome);
+      await salvarProfessores(professores);
+      carregarTabelaAdmin();
+    }
+  }
+
+  document.getElementById('btn-salvar-novo-professor').addEventListener('click', async () => {
+    const nome = document.getElementById('admin-novo-nome').value.trim();
+    const senha = document.getElementById('admin-novo-senha').value;
+    const papel = document.getElementById('admin-novo-papel').value;
+    const erro = document.getElementById('erro-admin-novo');
+    const sucesso = document.getElementById('sucesso-admin-novo');
+    erro.textContent = ""; sucesso.classList.add('hidden');
+
+    if(!nome || !senha) { erro.textContent = "Preencha usuário e senha."; return; }
+
+    let professores = obterProfessores();
+    if(professores.some(p => p.nome.toLowerCase() === nome.toLowerCase())) {
+      erro.textContent = "Já existe um usuário com esse nome."; return;
+    }
+
+    const senhaHash = await calcularHashSenha(senha);
+    professores.push({ nome, senhaHash, papel });
+    await salvarProfessores(professores);
+
+    sucesso.textContent = `Professor "${nome}" cadastrado com sucesso!`;
+    sucesso.classList.remove('hidden');
+    document.getElementById('admin-novo-nome').value = "";
+    document.getElementById('admin-novo-senha').value = "";
+    document.getElementById('admin-novo-papel').value = "professor";
+    carregarTabelaAdmin();
+  });
 
   // ==========================================
   // 4. LÓGICA DA TUTORIA
