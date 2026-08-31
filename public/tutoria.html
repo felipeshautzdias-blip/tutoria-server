@@ -992,6 +992,143 @@
       });
   }
 
+  function obterListaMaterias() {
+    if (materiasCache) return materiasCache;
+    const local = localStorage.getItem('lista_materias');
+    if (local) {
+      try { return JSON.parse(local); } catch (e) { console.error(e); }
+    }
+    return PADRAO_MATERIAS;
+  }
+
+  function salvarListaMaterias(lista) {
+    materiasCache = lista;
+    LISTA_MATERIAS = lista;
+    localStorage.setItem('lista_materias', JSON.stringify(lista));
+    fetch('/api/store/materias', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lista)
+    })
+      .then(resp => {
+        if (!resp.ok) throw new Error('Status ' + resp.status);
+      })
+      .catch(e => {
+        console.error('Falha ao salvar matérias no servidor:', e);
+        alert('Atenção: não foi possível salvar as matérias no servidor. As alterações ficaram apenas neste navegador.');
+      });
+  }
+
+  function preencherSelectMaterias(idSelect) {
+    const select = document.getElementById(idSelect);
+    if (!select) return;
+    const valorAtual = select.value;
+    select.innerHTML = '<option value="">Selecione...</option>';
+    LISTA_MATERIAS.forEach(m => {
+      select.innerHTML += `<option value="${m}">${m}</option>`;
+    });
+    if (LISTA_MATERIAS.includes(valorAtual)) select.value = valorAtual;
+  }
+
+  // ==========================================
+  // GERENCIAR MATÉRIAS (PROFESSOR)
+  // ==========================================
+  function abrirGerenciarMaterias() {
+    renderTabelaMaterias();
+    mostrarTela('prof-materias');
+  }
+
+  function renderTabelaMaterias() {
+    const corpo = document.getElementById('prof-materias-corpo');
+    corpo.innerHTML = "";
+
+    if (LISTA_MATERIAS.length === 0) {
+      corpo.innerHTML = `<tr><td colspan="2" class="vazio-tabela">Nenhuma matéria cadastrada.</td></tr>`;
+      return;
+    }
+
+    LISTA_MATERIAS.forEach(m => {
+      corpo.innerHTML += `
+        <tr>
+          <td>${m}</td>
+          <td class="acoes-cell">
+            <button class="btn-editar" onclick="editarMateriaProf('${m}')">Editar</button>
+            <button class="btn-excluir" onclick="removerMateriaProf('${m}')">Excluir</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  document.getElementById('btn-add-materia').addEventListener('click', () => {
+    const input = document.getElementById('prof-nova-materia');
+    const erro = document.getElementById('erro-prof-materias');
+    const nome = input.value.trim();
+    erro.textContent = "";
+
+    if (!nome) {
+      erro.textContent = "Digite o nome da matéria.";
+      return;
+    }
+    if (LISTA_MATERIAS.some(m => m.toLowerCase() === nome.toLowerCase())) {
+      erro.textContent = "Essa matéria já existe.";
+      return;
+    }
+
+    const novaLista = [...LISTA_MATERIAS, nome];
+    salvarListaMaterias(novaLista);
+    input.value = "";
+    renderTabelaMaterias();
+  });
+
+  function editarMateriaProf(nomeAntigo) {
+    const novoNome = prompt("Editar nome da matéria:", nomeAntigo);
+    if (novoNome === null) return;
+    const nomeLimpo = novoNome.trim();
+    if (!nomeLimpo) {
+      alert("O nome da matéria não pode ficar vazio.");
+      return;
+    }
+    if (nomeLimpo !== nomeAntigo && LISTA_MATERIAS.some(m => m.toLowerCase() === nomeLimpo.toLowerCase())) {
+      alert("Já existe uma matéria com esse nome.");
+      return;
+    }
+
+    const novaLista = LISTA_MATERIAS.map(m => m === nomeAntigo ? nomeLimpo : m);
+    salvarListaMaterias(novaLista);
+
+    // Atualiza o nome da matéria nas notas já lançadas dos alunos
+    if (nomeLimpo !== nomeAntigo) {
+      const banco = obterBancoUsuarios();
+      banco.forEach(aluno => {
+        if (aluno.materias && aluno.materias[nomeAntigo] !== undefined) {
+          aluno.materias[nomeLimpo] = aluno.materias[nomeAntigo];
+          delete aluno.materias[nomeAntigo];
+        }
+      });
+      salvarBanco(banco);
+    }
+
+    renderTabelaMaterias();
+  }
+
+  function removerMateriaProf(nome) {
+    if (!confirm(`Tem certeza que deseja remover a matéria "${nome}"? As notas já lançadas para ela serão perdidas.`)) return;
+
+    const novaLista = LISTA_MATERIAS.filter(m => m !== nome);
+    salvarListaMaterias(novaLista);
+
+    const banco = obterBancoUsuarios();
+    banco.forEach(aluno => {
+      if (aluno.materias && aluno.materias[nome] !== undefined) {
+        delete aluno.materias[nome];
+      }
+    });
+    salvarBanco(banco);
+
+    renderTabelaMaterias();
+  }
+
   function normalizarTelefone(tel) {
     return tel ? tel.replace(/\D/g, '') : '';
   }
@@ -1200,6 +1337,7 @@
 
     estadoProf.alunoSelecionado = aluno;
     document.getElementById('prof-aluno-selecionado-texto').textContent = `${aluno.nome} (${aluno.turma}) — RA: ${aluno.ra}`;
+    preencherSelectMaterias('prof-materia-select');
     mostrarTela('prof-materia');
   }
 
@@ -1382,6 +1520,7 @@
     }
 
     estadoAluno = { tutoria: aluno.turma, nome: aluno.nome, ra, digito, materiaSelecionada: "" };
+    preencherSelectMaterias('aluno-materia-select');
     mostrarTela('aluno-materia');
   });
 
