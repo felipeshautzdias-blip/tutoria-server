@@ -498,17 +498,6 @@
         <label for="aluno-materia-select">Matéria</label>
         <select id="aluno-materia-select">
           <option value="">Selecione...</option>
-          <option value="Artes">Artes</option>
-          <option value="Biologia">Biologia</option>
-          <option value="Ciências">Ciências</option>
-          <option value="Educação Física">Educação Física</option>
-          <option value="Física">Física</option>
-          <option value="Geografia">Geografia</option>
-          <option value="História">História</option>
-          <option value="Inglês">Inglês</option>
-          <option value="Matemática">Matemática</option>
-          <option value="Português">Português</option>
-          <option value="Química">Química</option>
         </select>
       </div>
       <div class="erro" id="erro-aluno-materia"></div>
@@ -624,6 +613,7 @@
       <p class="sub" id="prof-boas-vindas"></p>
 
       <button class="btn btn-green" type="button" style="margin-bottom:15px;" onclick="mostrarTela('dir-add-aluno')">➕ Cadastrar Aluno nesta Tutoria</button>
+      <button class="btn btn-ghost" type="button" style="margin-bottom:15px;" onclick="abrirGerenciarMaterias()">📚 Gerenciar Matérias</button>
 
       <div class="tabela-scroll">
         <table class="boletim-table">
@@ -648,17 +638,6 @@
         <label for="prof-materia-select">Matéria</label>
         <select id="prof-materia-select">
           <option value="">Selecione...</option>
-          <option value="Artes">Artes</option>
-          <option value="Biologia">Biologia</option>
-          <option value="Ciências">Ciências</option>
-          <option value="Educação Física">Educação Física</option>
-          <option value="Física">Física</option>
-          <option value="Geografia">Geografia</option>
-          <option value="História">História</option>
-          <option value="Inglês">Inglês</option>
-          <option value="Matemática">Matemática</option>
-          <option value="Português">Português</option>
-          <option value="Química">Química</option>
         </select>
       </div>
       <div class="erro" id="erro-prof-materia"></div>
@@ -788,6 +767,30 @@
       <button class="btn btn-ghost" type="button" onclick="mostrarTela('prof-alunos')">← Voltar</button>
     </div>
 
+    <!-- GERENCIAR MATÉRIAS -->
+    <div class="panel hidden" id="tela-prof-materias">
+      <p class="saudacao">Gerenciar Matérias</p>
+      <p class="sub">Adicione, edite ou remova as matérias disponíveis no sistema.</p>
+
+      <div class="campo">
+        <label for="prof-nova-materia">Nova Matéria</label>
+        <div class="ra-group">
+          <input type="text" id="prof-nova-materia" placeholder="Ex: Sociologia">
+          <button class="btn btn-green" type="button" id="btn-add-materia" style="padding:0 10px;">＋</button>
+        </div>
+      </div>
+      <div class="erro" id="erro-prof-materias"></div>
+
+      <div class="tabela-scroll">
+        <table class="boletim-table">
+          <thead><tr><th>Matéria</th><th>Ações</th></tr></thead>
+          <tbody id="prof-materias-corpo"></tbody>
+        </table>
+      </div>
+
+      <button class="btn btn-ghost" type="button" style="margin-top:15px;" onclick="mostrarTela('prof-alunos')">← Voltar para Minha Tutoria</button>
+    </div>
+
     <!-- ============================================== -->
     <!-- 4. ÁREA DO ADMINISTRADOR (ADM)                 -->
     <!-- ============================================== -->
@@ -856,7 +859,7 @@
 <script>
   const SENHA_ADM_MESTRE = "Admin@2026";
 
-  const LISTA_MATERIAS = [
+  let LISTA_MATERIAS = [
     "Artes", "Biologia", "Ciências", "Educação Física", "Física",
     "Geografia", "História", "Inglês", "Matemática", "Português", "Química"
   ];
@@ -868,9 +871,10 @@
 
   // ===== Persistência no servidor (com localStorage como cache/fallback) =====
   // Os dados de alunos usam o endpoint dedicado /api/alunos; os de
-  // professores usam o endpoint genérico /api/store/professores.
+  // professores e matérias usam o endpoint genérico /api/store/....
   let bancoAlunosCache = null;
   let bancoProfessoresCache = null;
+  let materiasCache = null;
 
   const PADRAO_ALUNOS = [
     {
@@ -891,9 +895,15 @@
     { usuario: "prof_carlos", senha: "123", tutoria: "Tutoria Prof. Carlos" }
   ];
 
+  const PADRAO_MATERIAS = [
+    "Artes", "Biologia", "Ciências", "Educação Física", "Física",
+    "Geografia", "História", "Inglês", "Matemática", "Português", "Química"
+  ];
+
   // Carrega os dados do servidor assim que a página abre. Enquanto essa
-  // requisição não termina, obterBancoUsuarios()/obterBancoProfessores()
-  // usam o que estiver salvo localmente (localStorage) como fallback.
+  // requisição não termina, obterBancoUsuarios()/obterBancoProfessores()/
+  // obterListaMaterias() usam o que estiver salvo localmente (localStorage)
+  // como fallback.
   async function inicializarDadosDoServidor() {
     try {
       const resp = await fetch('/api/alunos');
@@ -915,6 +925,17 @@
       localStorage.setItem('banco_professores', JSON.stringify(bancoProfessoresCache));
     } catch (e) {
       console.error('Não foi possível carregar professores do servidor, usando cache local:', e);
+    }
+
+    try {
+      const resp = await fetch('/api/store/materias');
+      if (!resp.ok) throw new Error('Falha ao buscar matérias: ' + resp.status);
+      const dados = await resp.json();
+      materiasCache = (Array.isArray(dados) && dados.length > 0) ? dados : obterListaMaterias();
+      localStorage.setItem('lista_materias', JSON.stringify(materiasCache));
+      LISTA_MATERIAS = materiasCache;
+    } catch (e) {
+      console.error('Não foi possível carregar matérias do servidor, usando cache local:', e);
     }
   }
   inicializarDadosDoServidor();
