@@ -963,10 +963,19 @@
 </div>
 
 <script>
-  // SENHAS DO SISTEMA
-  const SENHA_ALUNO = "@Josetalarico1";
-  const SENHA_PROFESSOR = "@Professor2026";
-  const SENHA_DIRETOR = "@Diretor2026"; 
+  // SENHAS DO SISTEMA — armazenadas como hash SHA-256 (nunca em texto puro)
+  const HASH_SENHA_ALUNO = "9476cced1f9048437f42b7a8ab162f1235d05ea6cdf010a46dce592f6d2be996";
+  const HASH_SENHA_PROFESSOR = "3d0ca12124970397baedcc2cdb3d23401c76bd75cdbc2503df4034b13aa34f0a";
+  const HASH_SENHA_DIRETOR = "f42fe071b4c74237cdaec598c7c439158f1531fb5adffff7b028d85ee0adadfd";
+
+  // Calcula o hash SHA-256 de uma string usando a Web Crypto API do navegador
+  async function calcularHashSenha(texto) {
+    const encoder = new TextEncoder();
+    const dados = encoder.encode(texto);
+    const bufferHash = await crypto.subtle.digest('SHA-256', dados);
+    const bytes = Array.from(new Uint8Array(bufferHash));
+    return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
   const LISTA_MATERIAS = ["Artes", "Biologia", "Ciências", "Educação Física", "Física", "Geografia", "História", "Inglês", "Matemática", "Português", "Química"];
 
@@ -1110,7 +1119,7 @@
   // ==========================================
   // 1. LÓGICA DO ALUNO
   // ==========================================
-  document.getElementById('btn-login-aluno').addEventListener('click', () => {
+  document.getElementById('btn-login-aluno').addEventListener('click', async () => {
     const turma = document.getElementById('aluno-turma-select').value;
     const nome = document.getElementById('aluno-nome').value.trim();
     const ra = document.getElementById('aluno-ra').value.trim();
@@ -1128,7 +1137,9 @@
 
     if(!aluno){ erro.textContent = "Aluno não encontrado. Verifique o RA e dígito."; return; }
     if(aluno.turma !== turma){ erro.textContent = `Acesso negado! Este aluno pertence à turma ${aluno.turma}.`; return; }
-    if(senha !== SENHA_ALUNO){ erro.textContent = "Senha incorreta."; return; }
+
+    const hashDigitado = await calcularHashSenha(senha);
+    if(hashDigitado !== HASH_SENHA_ALUNO){ erro.textContent = "Senha incorreta."; return; }
 
     estadoAluno.nome = aluno.nome;
     estadoAluno.ra = ra;
@@ -1314,12 +1325,14 @@
   // ==========================================
   // 3. LÓGICA DO PROFESSOR E GERADOR DE PDF
   // ==========================================
-  document.getElementById('btn-login-prof').addEventListener('click', () => {
+  document.getElementById('btn-login-prof').addEventListener('click', async () => {
     const nome = document.getElementById('prof-nome').value.trim();
     const senha = document.getElementById('prof-senha').value;
     const erro = document.getElementById('erro-prof-login');
     if(!nome){ erro.textContent = "Digite seu nome."; return; }
-    if(senha !== SENHA_PROFESSOR && senha !== SENHA_DIRETOR){ erro.textContent = "Senha incorreta."; return; }
+
+    const hashDigitado = await calcularHashSenha(senha);
+    if(hashDigitado !== HASH_SENHA_PROFESSOR && hashDigitado !== HASH_SENHA_DIRETOR){ erro.textContent = "Senha incorreta."; return; }
     
     estadoProf.nome = nome;
     document.getElementById('prof-boas-vindas').textContent = `Bem-vindo(a), ${nome}. Selecione um aluno ou acesse a tutoria.`;
@@ -1523,14 +1536,16 @@
   // ==========================================
   // 4. LÓGICA DA TUTORIA
   // ==========================================
-  document.getElementById('btn-login-dir').addEventListener('click', () => {
+  document.getElementById('btn-login-dir').addEventListener('click', async () => {
     const nome = document.getElementById('dir-nome').value.trim();
     const senha = document.getElementById('dir-senha').value;
     const erro = document.getElementById('erro-dir-login');
     erro.textContent = "";
 
     if(!nome) { erro.textContent = "Digite seu usuário."; return; }
-    if(senha !== SENHA_DIRETOR) { erro.textContent = "Senha incorreta."; return; }
+
+    const hashDigitado = await calcularHashSenha(senha);
+    if(hashDigitado !== HASH_SENHA_DIRETOR) { erro.textContent = "Senha incorreta."; return; }
 
     estadoDir.nome = nome;
     document.getElementById('dir-boas-vindas').textContent = `Bem-vindo(a), Tutor(a) ${nome}.`;
