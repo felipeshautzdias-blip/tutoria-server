@@ -22,7 +22,7 @@ app.use(express.json({ limit: '5mb' }));
 // Sistemas futuros: basta colocar o .html deles em /public e criar um card em index.html
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ===== Endpoint específico do sistema de Tutoria (mantido por compatibilidade) =====
+// ===== Endpoint específico do sistema de Tutoria (mantido por compatibilidade)  =====
 app.get('/api/alunos', (req, res) => {
   try {
     const dados = fs.readFileSync(DATA_FILE, 'utf8');
