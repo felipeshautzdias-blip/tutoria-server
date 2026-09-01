@@ -857,7 +857,19 @@
 </div> <!-- /stage -->
 
 <script>
-  const SENHA_ADM_MESTRE = "Admin@2026";
+  // Hash SHA-256 da senha mestre do Adm ("Admin@2026"), calculado uma única
+  // vez. Em vez de guardar a senha em texto puro, guardamos apenas o hash
+  // e comparamos o hash da senha digitada com este valor no login.
+  const SENHA_ADM_MESTRE_HASH = "a36aef5a11c4073fbe60314fc9df530a9d5f986533594d1f5190742ff9e0e408";
+
+  // Gera o hash SHA-256 (hex) de um texto usando a Web Crypto API do navegador.
+  async function gerarHashSHA256(texto) {
+    const dados = new TextEncoder().encode(texto);
+    const bufferHash = await crypto.subtle.digest('SHA-256', dados);
+    return Array.from(new Uint8Array(bufferHash))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
 
   let LISTA_MATERIAS = [
     "Artes", "Biologia", "Ciências", "Educação Física", "Física",
@@ -1188,7 +1200,7 @@
   // ==========================================
   // LÓGICA DO ADMIN (CADASTRAR PROFESSORES)
   // ==========================================
-  document.getElementById('btn-login-adm').addEventListener('click', () => {
+  document.getElementById('btn-login-adm').addEventListener('click', async () => {
     const usuario = document.getElementById('adm-usuario').value.trim();
     const senha = document.getElementById('adm-senha').value;
     const erro = document.getElementById('erro-adm-login');
@@ -1199,7 +1211,9 @@
       return;
     }
 
-    if (senha === SENHA_ADM_MESTRE) {
+    const hashDigitado = await gerarHashSHA256(senha);
+
+    if (hashDigitado === SENHA_ADM_MESTRE_HASH) {
       estadoAdm.usuario = usuario;
       estadoAdm.logado = true;
       carregarProfessoresAdm();
