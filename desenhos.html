@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Paint Studio — inspirado no Clip Studio Paint</title>
+<style>
+  :root{
+    --bg-app:#1c1c1e;
+    --bg-panel:#26262a;
+    --bg-panel-raised:#2f2f34;
+    --border:#3a3a3f;
+    --border-light:#48484f;
+    --text:#d8d8dc;
+    --text-dim:#8b8b92;
+    --accent:#4fa3ff;
+    --accent-dim:#2a5c8f;
+    --canvas-bg:#e9e9ec;
+    --danger:#ff6b6b;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:var(--bg-app);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:13px;
+    -webkit-user-select:none;user-select:none;
+    overflow:hidden;
+  }
+  #app{
+    display:flex;flex-direction:column;height:100vh;
+  }
+
+  /* ---------- Top bar ---------- */
+  #topbar{
+    display:flex;align-items:center;gap:14px;
+    background:var(--bg-panel);
+    border-bottom:1px solid var(--border);
+    padding:6px 14px;
+    flex-shrink:0;
+  }
+  #topbar .brand{
+    font-weight:700;letter-spacing:.5px;color:var(--text);
+    font-size:14px;
+  }
+  #topbar .brand span{color:var(--accent);}
+  #topbar .sep{width:1px;height:20px;background:var(--border-light);}
+  .tb-btn{
+    background:transparent;border:1px solid transparent;color:var(--text);
+    padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .tb-btn:hover{background:var(--bg-panel-raised);border-color:var(--border-light);}
+  .tb-btn:active{background:var(--accent-dim);}
+  #zoomLabel{width:48px;text-align:center;color:var(--text-dim);font-variant-numeric:tabular-nums;}
+
+  /* ---------- Body layout ---------- */
+  #body{flex:1;display:flex;min-height:0;}
+
+  /* ---------- Left tool rail ---------- */
+  #toolrail{
+    width:56px;flex-shrink:0;
+    background:var(--bg-panel);
+    border-right:1px solid var(--border);
+    display:flex;flex-direction:column;align-items:center;
+    padding:8px 0;gap:4px;overflow-y:auto;
+  }
+  .tool{
+    width:40px;height:40px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:var(--text-dim);
+    border:1px solid transparent;
+    position:relative;
+  }
+  .tool:hover{background:var(--bg-panel-raised);color:var(--text);}
+  .tool.active{background:var(--accent-dim);color:#fff;border-color:var(--accent);}
+  .tool svg{width:20px;height:20px;}
+  #floatTip{
+    position:fixed;background:#0e0e10;color:var(--text);padding:5px 9px;border-radius:5px;
+    font-size:11px;white-space:nowrap;pointer-events:none;opacity:0;
+    transition:opacity .08s;z-index:9999;border:1px solid var(--border-light);
+    box-shadow:0 4px 12px rgba(0,0,0,.4);
+  }
+  #floatTip.show{opacity:1;}
+
+  /* ---------- Canvas stage ---------- */
+  #stage{
+    flex:1;min-width:0;
+    background:
+      repeating-conic-gradient(#232326 0% 25%, #1c1c1e 0% 50%) 0 0/22px 22px;
+    display:flex;align-items:center;justify-content:center;
+    overflow:auto;position:relative;
+  }
+  #canvasWrap{
+    position:relative;
+    box-shadow:0 8px 30px rgba(0,0,0,.55);
+    background:var(--canvas-bg);
+    transform-origin:center center;
+  }
+  #canvasWrap canvas{
+    position:absolute;top:0;left:0;
+    image-rendering:pixelated;
+  }
+  #overlayCanvas{pointer-events:none;}
+  #cursorDot{
+    position:fixed;border:1.5px solid #fff;outline:1px solid rgba(0,0,0,.6);
+    border-radius:50%;pointer-events:none;z-index:999;transform:translate(-50%,-50%);
+    mix-blend-mode:difference;
+  }
+
+  /* ---------- Right panel ---------- */
+  #rightpanel{
+    width:236px;flex-shrink:0;
+    background:var(--bg-panel);
+    border-left:1px solid var(--border);
+    display:flex;flex-direction:column;
+    overflow-y:auto;
+  }
+  .panel-section{border-bottom:1px solid var(--border);padding:10px 12px;}
+  .panel-title{
+    font-size:11px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--text-dim);margin-bottom:8px;font-weight:600;
+  }
+
+  /* Color area */
+  .color-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  #currentColorInput{
+    width:44px;height:44px;border-radius:8px;border:2px solid var(--border-light);
+    padding:0;background:none;cursor:pointer;
+  }
+  .swatches{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;flex:1;}
+  .swatch{
+    width:100%;aspect-ratio:1/1;border-radius:4px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.12);
+  }
+  .swatch.selected{outline:2px solid var(--accent);outline-offset:1px;}
+
+  .slider-row{margin-bottom:10px;}
+  .slider-row label{
+    display:flex;justify-content:space-between;color:var(--text-dim);
+    font-size:11px;margin-bottom:4px;
+  }
+  .slider-row input[type=range]{width:100%;accent-color:var(--accent);}
+
+  /* Layers */
+  #layerToolbar{display:flex;gap:6px;margin-bottom:8px;}
+  .icon-btn{
+    background:var(--bg-panel-raised);border:1px solid var(--border-light);
+    color:var(--text);border-radius:5px;width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    font-size:14px;line-height:1;
+  }
+  .icon-btn:hover{background:var(--accent-dim);border-color:var(--accent);}
+  #layerList{display:flex;flex-direction:column-reverse;gap:4px;max-height:260px;overflow-y:auto;}
+  .layer-item{
+    display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;
+    border:1px solid transparent;cursor:pointer;
+  }
+  .layer-item:hover{background:var(--bg-panel-raised);}
+  .layer-item.active{background:var(--accent-dim);border-color:var(--accent);}
+  .layer-thumb{
+    width:34px;height:26px;border-radius:3px;background:#fff;flex-shrink:0;
+    border:1px solid rgba(255,255,255,.25);
+  }
+  .layer-name{
+    flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .layer-vis{cursor:pointer;color:var(--text-dim);font-size:13px;width:16px;text-align:center;}
+  .layer-vis.hidden-layer{opacity:.3;}
+
+  select, input[type=text]{
+    background:var(--bg-panel-raised);color:var(--text);border:1px solid var(--border-light);
+    border-radius:4px;padding:4px 6px;font-size:12px;width:100%;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="brand">Paint <span>Studio</span></div>
+    <div class="sep"></div>
+    <button class="tb-btn" id="btnNew">🗋 Novo</button>
+    <button class="tb-btn" id="btnExport">⬇ Exportar PNG</button>
+    <div class="sep"></div>
+    <button class="tb-btn" id="btnUndo">↶ Desfazer</button>
+    <button class="tb-btn" id="btnRedo">↷ Refazer</button>
+    <div class="sep"></div>
+    <button class="tb-btn" id="zoomOut">−</button>
+    <span id="zoomLabel">100%</span>
+    <button class="tb-btn" id="zoomIn">+</button>
+    <button class="tb-btn" id="zoomReset">Ajustar</button>
+  </div>
+
+  <div id="body">
+
+    <!-- TOOL RAIL -->
+    <div id="toolrail" id="toolrail">
+      <!-- tools injected by JS -->
+    </div>
+
+    <!-- CANVAS -->
+    <div id="stage">
+      <div id="canvasWrap"></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div id="rightpanel">
+      <div class="panel-section">
+        <div class="panel-title">Cor</div>
+        <div class="color-row">
+          <input type="color" id="currentColorInput" value="#1a1a1a" title="Cor atual">
+          <div class="swatches" id="swatches"></div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Pincel</div>
+        <div class="slider-row">
+          <label><span>Tamanho</span><span id="sizeVal">10</span></label>
+          <input type="range" id="sizeSlider" min="1" max="150" value="10">
+        </div>
+        <div class="slider-row">
+          <label><span>Opacidade</span><span id="opVal">100%</span></label>
+          <input type="range" id="opacitySlider" min="1" max="100" value="100">
+        </div>
+        <div class="slider-row">
+          <label><span>Dureza</span><span id="hardVal">100%</span></label>
+          <input type="range" id="hardnessSlider" min="0" max="100" value="100">
+        </div>
+      </div>
+
+      <div class="panel-section" style="flex:1;">
+        <div class="panel-title">Camadas</div>
+        <div id="layerToolbar">
+          <div class="icon-btn" id="btnAddLayer">＋</div>
+          <div class="icon-btn" id="btnDupLayer">⧉</div>
+          <div class="icon-btn" id="btnDelLayer">🗑</div>
+          <div class="icon-btn" id="btnUpLayer">▲</div>
+          <div class="icon-btn" id="btnDownLayer">▼</div>
+        </div>
+        <div id="layerList"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div id="cursorDot"></div>
+<div id="floatTip"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // CONFIG
+  // ---------------------------------------------------------------
+  const W = 900, H = 620;
+  let zoom = 1;
+  const wrap = document.getElementById('canvasWrap');
+  wrap.style.width = W+'px';
+  wrap.style.height = H+'px';
+
+  const overlay = document.createElement('canvas');
+  overlay.id = 'overlayCanvas';
+  overlay.width = W; overlay.height = H;
+  overlay.style.width = W+'px'; overlay.style.height = H+'px';
+  const octx = overlay.getContext('2d');
+
+  // ---------------------------------------------------------------
+  // TOOLS
+  // ---------------------------------------------------------------
+  const SVG_ICONS = {
+    pencil: '<path d="M3 17l1-4 10-10 3 3-10 10-4 1z"/><path d="M13 4l3 3"/>',
+    brush: '<path d="M15 3c1 1 1 3-1 5l-6 6-3 1 1-3 6-6c2-2 4-2 5-1-2-1-3 2-3 2z"/><path d="M4 20c0-2 1-3 3-3s3 1 3 3-6 3-6 0z"/>',
+    eraser: '<rect x="5" y="10" width="10" height="6" rx="1" transform="rotate(-30 10 13)"/><path d="M4 17h9"/>',
+    bucket: '<path d="M4 9l7-5 8 5-8 5-7-5z"/><path d="M4 9l8 5v6"/><path d="M12 14l8-5"/><circle cx="17" cy="16" r="1.4"/>',
+    eyedropper: '<path d="M14 3l3 3-9 9-4 1 1-4 9-9z"/><path d="M4 20l2-5"/>',
+    line: '<path d="M4 16L16 4"/>',
+    rect: '<rect x="4" y="6" width="12" height="9"/>',
+    ellipse: '<ellipse cx="10" cy="10" rx="7" ry="5"/>',
+  };
+  const TOOLS = [
+    {id:'pencil', name:'Lápis'},
+    {id:'brush', name:'Pincel'},
+    {id:'eraser', name:'Borracha'},
+    {id:'bucket', name:'Balde de tinta'},
+    {id:'eyedropper', name:'Conta-gotas'},
+    {id:'line', name:'Linha'},
+    {id:'rect', name:'Retângulo'},
+    {id:'ellipse', name:'Elipse'},
+  ];
+  let currentTool = 'brush';
+
+  const floatTip = document.getElementById('floatTip');
+  function attachTip(el, getText){
+    el.addEventListener('mouseenter', ()=>{
+      const text = typeof getText==='function' ? getText() : getText;
+      if(!text) return;
+      floatTip.textContent = text;
+      const r = el.getBoundingClientRect();
+      floatTip.style.left = (r.right + 8) + 'px';
+      floatTip.style.top = (r.top + r.height/2) + 'px';
+      floatTip.style.transform = 'translateY(-50%)';
+      floatTip.classList.add('show');
+    });
+    el.addEventListener('mouseleave', ()=> floatTip.classList.remove('show'));
+  }
+
+  const rail = document.getElementById('toolrail');
+  TOOLS.forEach(t=>{
+    const el = document.createElement('div');
+    el.className = 'tool'+(t.id===currentTool?' active':'');
+    el.dataset.tool = t.id;
+    el.innerHTML = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${SVG_ICONS[t.id]}</svg>`;
+    el.addEventListener('click', ()=>{
+      document.querySelectorAll('.tool').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      currentTool = t.id;
+    });
+    attachTip(el, t.name);
+    rail.appendChild(el);
+  });
+
+  // ---------------------------------------------------------------
+  // STATE: layers
+  // ---------------------------------------------------------------
+  let layers = [];
+  let activeLayerIndex = 0;
+  let layerCounter = 0;
+  const undoStack = []; // {layerId, dataUrl}
+  const redoStack = [];
+
+  function makeLayerCanvas(){
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    c.style.width = W+'px'; c.style.height = H+'px';
+    return c;
+  }
+
+  function addLayer(name, insertAt){
+    layerCounter++;
+    const canvas = makeLayerCanvas();
+    const layer = {
+      id:'layer-'+layerCounter,
+      name: name || ('Camada '+layerCounter),
+      canvas, ctx: canvas.getContext('2d'),
+      visible:true
+    };
+    const idx = (insertAt===undefined) ? layers.length : insertAt;
+    layers.splice(idx,0,layer);
+    rebuildDom();
+    setActiveLayer(idx);
+    renderLayerList();
+    return layer;
+  }
+
+  function rebuildDom(){
+    wrap.innerHTML='';
+    layers.forEach(l=> wrap.appendChild(l.canvas));
+    wrap.appendChild(overlay);
+    updateZIndex();
+  }
+  function updateZIndex(){
+    layers.forEach((l,i)=>{ l.canvas.style.zIndex = i; l.canvas.style.display = l.visible?'block':'none'; });
+    overlay.style.zIndex = layers.length+1;
+  }
+
+  function setActiveLayer(i){
+    activeLayerIndex = i;
+    renderLayerList();
+  }
+  function activeLayer(){ return layers[activeLayerIndex]; }
+
+  function renderLayerList(){
+    const list = document.getElementById('layerList');
+    list.innerHTML = '';
+    layers.forEach((l,i)=>{
+      const row = document.createElement('div');
+      row.className = 'layer-item'+(i===activeLayerIndex?' active':'');
+      const thumb = document.createElement('canvas');
+      thumb.className='layer-thumb'; thumb.width=68; thumb.height=52;
+      const tctx = thumb.getContext('2d');
+      tctx.fillStyle='#fff'; tctx.fillRect(0,0,68,52);
+      tctx.drawImage(l.canvas,0,0,68,52);
+
+      const nameEl = document.createElement('div');
+      nameEl.className='layer-name'; nameEl.textContent=l.name;
+
+      const visEl = document.createElement('div');
+      visEl.className='layer-vis'+(l.visible?'':' hidden-layer');
+      visEl.textContent = '👁';
+      visEl.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        l.visible = !l.visible;
+        updateZIndex();
+        renderLayerList();
+      });
+
+      row.appendChild(thumb);
+      row.appendChild(nameEl);
+      row.appendChild(visEl);
+      row.addEventListener('click', ()=> setActiveLayer(i));
+      list.appendChild(row);
+    });
+  }
+
+  attachTip(document.getElementById('btnAddLayer'), 'Nova camada');
+  attachTip(document.getElementById('btnDupLayer'), 'Duplicar camada');
+  attachTip(document.getElementById('btnDelLayer'), 'Excluir camada');
+  attachTip(document.getElementById('btnUpLayer'), 'Mover para cima');
+  attachTip(document.getElementById('btnDownLayer'), 'Mover para baixo');
+
+  document.getElementById('btnAddLayer').onclick = ()=> addLayer(null, activeLayerIndex+1);
+  document.getElementById('btnDupLayer').onclick = ()=>{
+    const src = activeLayer();
+    const l = addLayer(src.name+' cópia', activeLayerIndex+1);
+    l.ctx.drawImage(src.canvas,0,0);
+    renderLayerList();
+  };
+  document.getElementById('btnDelLayer').onclick = ()=>{
+    if(layers.length<=1) return;
+    layers.splice(activeLayerIndex,1);
+    rebuildDom();
+    setActiveLayer(Math.max(0, activeLayerIndex-1));
+  };
+  document.getElementById('btnUpLayer').onclick = ()=>{
+    if(activeLayerIndex>=layers.length-1) return;
+    const tmp = layers[activeLayerIndex];
+    layers[activeLayerIndex]=layers[activeLayerIndex+1];
+    layers[activeLayerIndex+1]=tmp;
+    activeLayerIndex++;
+    rebuildDom(); renderLayerList();
+  };
+  document.getElementById('btnDownLayer').onclick = ()=>{
+    if(activeLayerIndex<=0) return;
+    const tmp = layers[activeLayerIndex];
+    layers[activeLayerIndex]=layers[activeLayerIndex-1];
+    layers[activeLayerIndex-1]=tmp;
+    activeLayerIndex--;
+    rebuildDom(); renderLayerList();
+  };
+
+  // ---------------------------------------------------------------
+  // COLOR / BRUSH SETTINGS
+  // ---------------------------------------------------------------
+  const colorInput = document.getElementById('currentColorInput');
+  let currentColor = colorInput.value;
+  colorInput.addEventListener('input', ()=> currentColor = colorInput.value);
+
+  const PALETTE = ['#000000','#ffffff','#7f7f7f','#c0c0c0','#ff3b30','#ff9500','#ffcc00',
+                    '#34c759','#00c7be','#30a1ff','#0058cc','#5856d6','#af52de','#ff2d92',
+                    '#8b5a2b','#4a3222'];
+  const swEl = document.getElementById('swatches');
+  const PALETTE_NAMES = {
+    '#000000':'Preto', '#ffffff':'Branco', '#7f7f7f':'Cinza', '#c0c0c0':'Cinza claro',
+    '#ff3b30':'Vermelho', '#ff9500':'Laranja', '#ffcc00':'Amarelo', '#34c759':'Verde',
+    '#00c7be':'Turquesa', '#30a1ff':'Azul claro', '#0058cc':'Azul', '#5856d6':'Roxo',
+    '#af52de':'Violeta', '#ff2d92':'Rosa', '#8b5a2b':'Marrom', '#4a3222':'Marrom escuro'
+  };
+  PALETTE.forEach(c=>{
+    const s = document.createElement('div');
+    s.className='swatch'; s.style.background=c;
+    attachTip(s, (PALETTE_NAMES[c] || 'Cor') + ' (' + c + ')');
+    s.addEventListener('click', ()=>{
+      currentColor = c; colorInput.value = c;
+      document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('selected'));
+      s.classList.add('selected');
+    });
+    swEl.appendChild(s);
+  });
+
+  let brushSize = 10, brushOpacity = 1, brushHardness = 1;
+  const sizeSlider = document.getElementById('sizeSlider');
+  const opSlider = document.getElementById('opacitySlider');
+  const hardSlider = document.getElementById('hardnessSlider');
+  sizeSlider.addEventListener('input', ()=>{ brushSize=+sizeSlider.value; document.getElementById('sizeVal').textContent=brushSize; });
+  opSlider.addEventListener('input', ()=>{ brushOpacity=+opSlider.value/100; document.getElementById('opVal').textContent=opSlider.value+'%'; });
+  hardSlider.addEventListener('input', ()=>{ brushHardness=+hardSlider.value/100; document.getElementById('hardVal').textContent=hardSlider.value+'%'; });
+
+  // update cursor preview circle
+  const cursorDot = document.getElementById('cursorDot');
+  function updateCursorDot(clientX, clientY){
+    const size = Math.max(4, brushSize*zoom);
+    cursorDot.style.width = size+'px';
+    cursorDot.style.height = size+'px';
+    cursorDot.style.left = clientX+'px';
+    cursorDot.style.top = clientY+'px';
+  }
+
+  // ---------------------------------------------------------------
+  // DRAWING
+  // ---------------------------------------------------------------
+  let drawing = false;
+  let lastX=0, lastY=0;
+  let shapeStartX=0, shapeStartY=0;
+  let strokeSnapshotTaken = false;
+
+  function localCoords(e){
+    const rect = wrap.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / zoom;
+    const y = (e.clientY - rect.top) / zoom;
+    return {x,y};
+  }
+
+  function pushUndo(){
+    const l = activeLayer();
+    undoStack.push({layerId:l.id, dataUrl:l.canvas.toDataURL()});
+    if(undoStack.length>25) undoStack.shift();
+    redoStack.length = 0;
+  }
+
+  function strokeTo(ctx, x0,y0,x1,y1,pressure){
+    const size = brushSize * (pressure||1);
+    ctx.save();
+    ctx.lineJoin='round';
+    ctx.lineCap='round';
+    ctx.globalAlpha = brushOpacity;
+    if(currentTool==='eraser'){
+      ctx.globalCompositeOperation='destination-out';
+      ctx.strokeStyle='rgba(0,0,0,1)';
+    } else {
+      ctx.globalCompositeOperation='source-over';
+      ctx.strokeStyle = currentColor;
+    }
+    ctx.lineWidth = Math.max(1,size);
+    if(currentTool==='brush' && brushHardness<1){
+      ctx.shadowColor = currentColor;
+      ctx.shadowBlur = size*(1-brushHardness)*0.6;
+    } else {
+      ctx.shadowBlur = 0;
+    }
+    ctx.beginPath();
+    ctx.moveTo(x0,y0);
+    ctx.lineTo(x1,y1);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function dot(ctx,x,y,pressure){
+    strokeTo(ctx,x,y,x+0.01,y+0.01,pressure);
+  }
+
+  function floodFill(ctx,x,y,fillColor){
+    x=Math.round(x); y=Math.round(y);
+    if(x<0||y<0||x>=W||y>=H) return;
+    const img = ctx.getImageData(0,0,W,H);
+    const data = img.data;
+    const idx = (y*W+x)*4;
+    const target = [data[idx],data[idx+1],data[idx+2],data[idx+3]];
+    const fc = hexToRgb(fillColor);
+    const fillA = Math.round(brushOpacity*255);
+    if(target[0]===fc.r && target[1]===fc.g && target[2]===fc.b && target[3]===fillA) return;
+    const stack=[[x,y]];
+    const tol=24;
+    function match(i){
+      return Math.abs(data[i]-target[0])<=tol &&
+             Math.abs(data[i+1]-target[1])<=tol &&
+             Math.abs(data[i+2]-target[2])<=tol &&
+             Math.abs(data[i+3]-target[3])<=tol;
+    }
+    while(stack.length){
+      const [cx,cy]=stack.pop();
+      if(cx<0||cy<0||cx>=W||cy>=H) continue;
+      const i=(cy*W+cx)*4;
+      if(!match(i)) continue;
+      data[i]=fc.r; data[i+1]=fc.g; data[i+2]=fc.b; data[i+3]=fillA;
+      stack.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);
+    }
+    ctx.putImageData(img,0,0);
+  }
+  function hexToRgb(hex){
+    const v = parseInt(hex.replace('#',''),16);
+    return {r:(v>>16)&255, g:(v>>8)&255, b:v&255};
+  }
+
+  function compositeAll(){
+    const tmp = document.createElement('canvas');
+    tmp.width=W; tmp.height=H;
+    const tctx = tmp.getContext('2d');
+    tctx.fillStyle='#ffffff'; tctx.fillRect(0,0,W,H);
+    layers.forEach(l=>{ if(l.visible) tctx.drawImage(l.canvas,0,0); });
+    return tmp;
+  }
+
+  function pointerDown(e){
+    if(e.button!==undefined && e.button!==0) return;
+    const {x,y} = localCoords(e);
+    const pressure = e.pressure && e.pointerType==='pen' ? Math.max(0.15,e.pressure) : 1;
+
+    if(currentTool==='eyedropper'){
+      const comp = compositeAll();
+      const d = comp.getContext('2d').getImageData(Math.round(x),Math.round(y),1,1).data;
+      const hex = '#'+[d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
+      currentColor = hex; colorInput.value = hex;
+      return;
+    }
+    if(currentTool==='bucket'){
+      pushUndo();
+      floodFill(activeLayer().ctx, x, y, currentColor);
+      renderLayerList();
+      return;
+    }
+
+    drawing = true;
+    strokeSnapshotTaken = false;
+    lastX=x; lastY=y; shapeStartX=x; shapeStartY=y;
+
+    if(currentTool==='pencil' || currentTool==='brush' || currentTool==='eraser'){
+      pushUndo();
+      strokeSnapshotTaken = true;
+      dot(activeLayer().ctx, x, y, pressure);
+    } else if(['line','rect','ellipse'].includes(currentTool)){
+      pushUndo();
+      strokeSnapshotTaken = true;
+    }
+    wrap.setPointerCapture && e.pointerId!==undefined && wrap.setPointerCapture(e.pointerId);
+  }
+
+  function pointerMove(e){
+    updateCursorDot(e.clientX, e.clientY);
+    if(!drawing) return;
+    const {x,y} = localCoords(e);
+    const pressure = e.pressure && e.pointerType==='pen' ? Math.max(0.15,e.pressure) : 1;
+
+    if(currentTool==='pencil' || currentTool==='brush' || currentTool==='eraser'){
+      strokeTo(activeLayer().ctx, lastX,lastY,x,y,pressure);
+      lastX=x; lastY=y;
+    } else if(currentTool==='line'){
+      octx.clearRect(0,0,W,H);
+      octx.save(); octx.strokeStyle=currentColor; octx.lineWidth=brushSize; octx.lineCap='round';
+      octx.globalAlpha = brushOpacity;
+      octx.beginPath(); octx.moveTo(shapeStartX,shapeStartY); octx.lineTo(x,y); octx.stroke();
+      octx.restore();
+    } else if(currentTool==='rect'){
+      octx.clearRect(0,0,W,H);
+      octx.save(); octx.strokeStyle=currentColor; octx.lineWidth=brushSize; octx.globalAlpha=brushOpacity;
+      octx.strokeRect(Math.min(shapeStartX,x),Math.min(shapeStartY,y),Math.abs(x-shapeStartX),Math.abs(y-shapeStartY));
+      octx.restore();
+    } else if(currentTool==='ellipse'){
+      octx.clearRect(0,0,W,H);
+      octx.save(); octx.strokeStyle=currentColor; octx.lineWidth=brushSize; octx.globalAlpha=brushOpacity;
+      const cx=(shapeStartX+x)/2, cy=(shapeStartY+y)/2, rx=Math.abs(x-shapeStartX)/2, ry=Math.abs(y-shapeStartY)/2;
+      octx.beginPath(); octx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); octx.stroke();
+      octx.restore();
+    }
+  }
+
+  function pointerUp(e){
+    if(!drawing) return;
+    drawing = false;
+    if(['line','rect','ellipse'].includes(currentTool)){
+      activeLayer().ctx.drawImage(overlay,0,0);
+      octx.clearRect(0,0,W,H);
+    }
+    renderLayerList();
+  }
+
+  wrap.addEventListener('pointerdown', pointerDown);
+  window.addEventListener('pointermove', pointerMove);
+  window.addEventListener('pointerup', pointerUp);
+  wrap.addEventListener('mouseenter', ()=> cursorDot.style.display='block');
+  wrap.addEventListener('mouseleave', ()=> cursorDot.style.display='none');
+  cursorDot.style.display='none';
+
+  // ---------------------------------------------------------------
+  // UNDO / REDO
+  // ---------------------------------------------------------------
+  function findLayer(id){ return layers.find(l=>l.id===id); }
+
+  document.getElementById('btnUndo').onclick = ()=>{
+    if(!undoStack.length) return;
+    const state = undoStack.pop();
+    const l = findLayer(state.layerId);
+    if(!l) return;
+    redoStack.push({layerId:l.id, dataUrl:l.canvas.toDataURL()});
+    const img = new Image();
+    img.onload = ()=>{ l.ctx.clearRect(0,0,W,H); l.ctx.drawImage(img,0,0); renderLayerList(); };
+    img.src = state.dataUrl;
+  };
+  document.getElementById('btnRedo').onclick = ()=>{
+    if(!redoStack.length) return;
+    const state = redoStack.pop();
+    const l = findLayer(state.layerId);
+    if(!l) return;
+    undoStack.push({layerId:l.id, dataUrl:l.canvas.toDataURL()});
+    const img = new Image();
+    img.onload = ()=>{ l.ctx.clearRect(0,0,W,H); l.ctx.drawImage(img,0,0); renderLayerList(); };
+    img.src = state.dataUrl;
+  };
+  window.addEventListener('keydown', (e)=>{
+    if((e.ctrlKey||e.metaKey) && !e.shiftKey && e.key.toLowerCase()==='z'){ e.preventDefault(); document.getElementById('btnUndo').click(); }
+    if((e.ctrlKey||e.metaKey) && (e.shiftKey && e.key.toLowerCase()==='z')){ e.preventDefault(); document.getElementById('btnRedo').click(); }
+  });
+
+  // ---------------------------------------------------------------
+  // NEW / EXPORT / ZOOM
+  // ---------------------------------------------------------------
+  document.getElementById('btnNew').onclick = ()=>{
+    if(!confirm('Criar nova tela? O trabalho atual será perdido.')) return;
+    layers = []; layerCounter = 0; undoStack.length=0; redoStack.length=0;
+    addLayer('Camada 1');
+  };
+  document.getElementById('btnExport').onclick = ()=>{
+    const comp = compositeAll();
+    const a = document.createElement('a');
+    a.download = 'desenho.png';
+    a.href = comp.toDataURL('image/png');
+    a.click();
+  };
+
+  function applyZoom(){
+    wrap.style.transform = `scale(${zoom})`;
+    document.getElementById('zoomLabel').textContent = Math.round(zoom*100)+'%';
+  }
+  attachTip(document.getElementById('zoomIn'), 'Aumentar zoom');
+  attachTip(document.getElementById('zoomOut'), 'Diminuir zoom');
+  attachTip(document.getElementById('zoomReset'), 'Ajustar a 100%');
+  attachTip(document.getElementById('btnNew'), 'Criar nova tela');
+  attachTip(document.getElementById('btnExport'), 'Baixar como PNG');
+  attachTip(document.getElementById('btnUndo'), 'Desfazer (Ctrl+Z)');
+  attachTip(document.getElementById('btnRedo'), 'Refazer (Ctrl+Shift+Z)');
+  attachTip(colorInput, 'Cor atual');
+
+  document.getElementById('zoomIn').onclick = ()=>{ zoom=Math.min(4,zoom+0.1); applyZoom(); };
+  document.getElementById('zoomOut').onclick = ()=>{ zoom=Math.max(0.1,zoom-0.1); applyZoom(); };
+  document.getElementById('zoomReset').onclick = ()=>{ zoom=1; applyZoom(); };
+
+  // ---------------------------------------------------------------
+  // INIT
+  // ---------------------------------------------------------------
+  addLayer('Camada 1');
+  activeLayer().ctx.fillStyle = '#ffffff';
+  activeLayer().ctx.fillRect(0,0,W,H);
+  undoStack.length = 0; // don't count the initial fill
+  applyZoom();
+})();
+</script>
+</body>
+</html>
