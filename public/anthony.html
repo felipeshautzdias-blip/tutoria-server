@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Devloper Tech — portfólio de projetos de tecnologia, programação, jogos e aplicações.">
+<title>Devloper Tech | Projetos</title>
+<style>
+:root{
+  --bg:#05070b;
+  --panel:#0b1018;
+  --panel2:#101722;
+  --text:#f4f7fb;
+  --muted:#9ba8b8;
+  --blue:#168cff;
+  --blue2:#00b7ff;
+  --line:rgba(255,255,255,.09);
+  --shadow:0 18px 60px rgba(0,0,0,.38);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(circle at 80% 0%,rgba(0,140,255,.14),transparent 30rem),
+    radial-gradient(circle at 10% 30%,rgba(0,90,255,.08),transparent 28rem),
+    var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+a{text-decoration:none;color:inherit}
+button,input{font:inherit}
+.container{width:min(1160px,92%);margin:auto}
+
+/* HEADER */
+header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(5,7,11,.78);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+}
+.nav{
+  height:74px;display:flex;align-items:center;justify-content:space-between;gap:20px;
+}
+.brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.5px}
+.brand-mark{
+  width:42px;height:42px;border-radius:14px;position:relative;
+  background:linear-gradient(135deg,#0878ed,#00a8ff);
+  box-shadow:0 0 25px rgba(22,140,255,.35), inset 0 1px 1px rgba(255,255,255,.4);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.brand-mark::before{
+  content:"</>";
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+  font-size:14px;
+  font-weight:900;
+  color:#fff;
+  letter-spacing:-1px;
+  text-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+.brand-mark::after{
+  content:"";
+  position:absolute;
+  inset:-50%;
+  background:radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  opacity:0;
+  transition:opacity .3s;
+}
+.brand:hover .brand-mark::after{
+  opacity:1;
+}
+.auth-logo .brand-mark{
+  width:46px;height:46px;
+}
+.brand span{font-size:18px}.brand em{color:var(--blue);font-style:normal}
+.nav-links{display:flex;align-items:center;gap:28px;color:#c6d0dc;font-size:14px}
+.nav-links a:hover{color:#fff}
+.nav-btn{
+  padding:11px 16px;border:1px solid rgba(22,140,255,.5);
+  border-radius:10px;color:#fff;background:rgba(22,140,255,.1);
+}
+.menu{display:none;background:none;border:0;color:#fff;font-size:25px}
+
+/* HERO */
+.hero{padding:94px 0 70px;position:relative;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.2fr .8fr;align-items:center;gap:50px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;padding:7px 12px;
+  border:1px solid rgba(22,140,255,.3);border-radius:999px;
+  color:#9ed5ff;background:rgba(22,140,255,.07);font-size:12px;font-weight:800;
+  text-transform:uppercase;letter-spacing:1.3px;margin-bottom:22px;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:#19a5ff;box-shadow:0 0 14px #19a5ff}
+h1{font-size:clamp(44px,7vw,76px);line-height:.98;letter-spacing:-3px;max-width:760px}
+h1 span{color:var(--blue)}
+.hero p{color:var(--muted);font-size:18px;line-height:1.7;max-width:650px;margin:24px 0 30px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn-pill{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  border:1px solid var(--line);border-radius:999px;padding:13px 22px;
+  cursor:pointer;color:#fff;background:#0a1018;font-weight:800;font-size:14px;
+  transition:.2s transform,.2s border-color,.2s background;
+}
+.btn-pill:hover{transform:translateY(-2px);border-color:rgba(22,140,255,.55);background:#0d1621}
+.btn-pill.primary{background:linear-gradient(135deg,#0878ed,#00a8ff);border-color:transparent;box-shadow:0 10px 30px rgba(0,130,255,.2)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  border:1px solid var(--line);border-radius:11px;padding:13px 18px;
+  cursor:pointer;color:#fff;background:#111823;font-weight:800;
+  transition:.2s transform,.2s border-color,.2s background;
+}
+.btn:hover{transform:translateY(-2px);border-color:rgba(22,140,255,.6)}
+.btn.primary{background:linear-gradient(135deg,#0878ed,#00a8ff);border-color:transparent;box-shadow:0 10px 30px rgba(0,130,255,.2)}
+.hero-card{
+  min-height:330px;border:1px solid var(--line);border-radius:24px;
+  background:linear-gradient(145deg,rgba(16,23,34,.92),rgba(6,10,16,.95));
+  box-shadow:var(--shadow);padding:26px;position:relative;overflow:hidden;
+}
+.hero-card:before,.hero-card:after{
+  content:"";position:absolute;border-radius:50%;filter:blur(2px);
+  border:1px solid rgba(22,140,255,.3);
+}
+.hero-card:before{width:250px;height:250px;right:-100px;top:-80px}
+.hero-card:after{width:180px;height:180px;left:-100px;bottom:-100px}
+.code-window{border:1px solid var(--line);border-radius:15px;background:#06090e;overflow:hidden}
+.window-top{padding:11px 14px;border-bottom:1px solid var(--line);display:flex;gap:6px}
+.circle{width:9px;height:9px;border-radius:50%;background:#26303c}
+.code{padding:22px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#b9c7d8;font-size:13px;line-height:1.9}
+.code .blue{color:#2fa7ff}.code .white{color:#fff}.code .green{color:#68d391}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat{padding:12px;border:1px solid var(--line);border-radius:12px;background:#0b1018}
+.stat b{display:block;font-size:20px}.stat small{color:var(--muted)}
+
+/* SECTIONS */
+section{padding:70px 0}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:28px}
+.section-head h2{font-size:32px;letter-spacing:-1px}
+.section-head p{color:var(--muted);max-width:560px;line-height:1.6}
+.searchbar{
+  display:flex;gap:10px;margin-bottom:18px;
+}
+.searchbar input{
+  flex:1;background:#0b1018;border:1px solid var(--line);outline:none;
+  border-radius:11px;padding:13px 15px;color:#fff;
+}
+.searchbar input:focus{border-color:rgba(22,140,255,.65)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:25px}
+.filter{
+  padding:8px 12px;border:1px solid var(--line);border-radius:999px;
+  background:#0a0f16;color:#aeb9c7;cursor:pointer;font-size:13px;
+}
+.filter.active,.filter:hover{background:rgba(22,140,255,.13);border-color:rgba(22,140,255,.55);color:#fff}
+.projects{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+
+/* CARD */
+.card{
+  border:1px solid var(--line);background:linear-gradient(145deg,#0c121b,#080c12);
+  border-radius:20px;padding:16px;display:flex;align-items:center;gap:14px;
+  transition:.25s transform,.25s border-color,.25s box-shadow;
+}
+.card:hover{transform:translateY(-4px);border-color:rgba(22,140,255,.4);box-shadow:0 15px 45px rgba(0,0,0,.28)}
+
+.card-icon{
+  flex:0 0 42px;width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:19px;
+  box-shadow:0 8px 18px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12);
+  position:relative;
+}
+.card-icon span{filter:drop-shadow(0 3px 6px rgba(0,0,0,.4))}
+.card-icon.game{background:linear-gradient(135deg,#2451ff,#00c2ff)}
+.card-icon.web{background:linear-gradient(135deg,#00b7ff,#28e0c0)}
+.card-icon.app{background:linear-gradient(135deg,#7152ff,#d060ff)}
+
+.card-info{flex:1;min-width:0}
+.card h3{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.tag{font-size:10.5px;color:#b8dfff;background:rgba(22,140,255,.09);border:1px solid rgba(22,140,255,.18);padding:4px 7px;border-radius:6px}
+
+.card-action{flex:0 0 auto}
+.btn-open{
+  border:0;cursor:pointer;padding:10px 22px;border-radius:999px;
+  background:linear-gradient(135deg,#00b7ff,#8a5bff);color:#fff;
+  font-weight:800;font-size:12.5px;letter-spacing:.4px;text-transform:uppercase;
+  box-shadow:0 8px 22px rgba(22,140,255,.35);transition:.2s transform;
+}
+.btn-open:hover{transform:translateY(-2px)}
+
+.empty{display:none;text-align:center;color:var(--muted);padding:45px;border:1px dashed var(--line);border-radius:15px}
+
+/* ABOUT */
+.about{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.panel{border:1px solid var(--line);background:#0a1018;border-radius:18px;padding:28px}
+.panel h3{font-size:22px;margin-bottom:12px}.panel p{color:var(--muted);line-height:1.7}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.feature{
+  padding:16px;border:1px solid var(--line);border-radius:12px;background:#0c131c;
+  cursor:pointer;transition:.22s transform,.22s border-color,.22s background,.22s box-shadow;
+  user-select:none;
+}
+.feature:hover{
+  transform:translateY(-3px);border-color:rgba(22,140,255,.55);
+  background:rgba(22,140,255,.07);box-shadow:0 10px 28px rgba(0,0,0,.2);
+}
+.feature.active{
+  border-color:rgba(22,140,255,.8);background:rgba(22,140,255,.12);
+  box-shadow:0 0 0 1px rgba(22,140,255,.18),0 10px 30px rgba(22,140,255,.1);
+}
+.feature b{display:block;margin-bottom:5px}.feature span{font-size:12px;color:var(--muted)}
+.feature:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+
+/* ADD PROJECT */
+.add-box{
+  border:1px solid rgba(22,140,255,.3);border-radius:22px;padding:30px;
+  background:linear-gradient(135deg,rgba(22,140,255,.09),rgba(8,12,18,.9));
+}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:20px}
+.form-grid .full{grid-column:1/-1}
+label{display:block;font-size:12px;color:#b7c3d1;margin-bottom:7px}
+input,select,textarea{
+  width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:10px;
+  background:#080d14;color:#fff;outline:none;
+}
+textarea{min-height:110px;resize:vertical}
+.form-actions{margin-top:15px;display:flex;gap:10px;align-items:center}
+.note{font-size:12px;color:var(--muted)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--line);padding:35px 0;color:#8190a1}
+.footer-inner{display:flex;justify-content:space-between;gap:20px;align-items:center;font-size:13px}
+.footer-brand{color:#fff;font-weight:900}.footer-brand span{color:var(--blue)}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(7px);display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+.modal.show{display:flex}
+.modal-box{width:min(700px,100%);max-height:90vh;overflow:auto;background:#0b1119;border:1px solid var(--line);border-radius:20px;padding:25px;box-shadow:var(--shadow)}
+.modal-head{display:flex;justify-content:space-between;gap:15px;align-items:start;margin-bottom:15px}
+.close{background:none;border:0;color:#aab7c5;font-size:26px;cursor:pointer}
+.modal-cover{height:190px;border-radius:14px;margin-bottom:18px;display:flex;align-items:center;justify-content:center;font-size:70px;background:linear-gradient(135deg,rgba(22,140,255,.2),#07101a);border:1px solid var(--line)}
+.modal-box p{color:var(--muted);line-height:1.7;margin:10px 0}
+.modal-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+
+/* MOBILE */
+@media(max-width:850px){
+  .nav-links{display:none;position:absolute;left:4%;right:4%;top:70px;padding:15px;background:#0b1018;border:1px solid var(--line);border-radius:13px;flex-direction:column;align-items:stretch}
+  .nav-links.open{display:flex}.nav-links a{padding:10px}
+  .menu{display:block}
+  .hero{padding-top:65px}.hero-grid{grid-template-columns:1fr}.hero-card{min-height:auto}
+  .projects{grid-template-columns:1fr}
+  .about{grid-template-columns:1fr}
+}
+@media(max-width:570px){
+  .brand span{font-size:16px}.brand-mark{width:38px;height:38px}
+  h1{letter-spacing:-2px}.hero p{font-size:16px}
+  .card{padding:12px;gap:10px}.card-icon{flex-basis:38px;width:38px;height:38px;font-size:17px;border-radius:11px}
+  .btn-open{padding:9px 16px;font-size:11.5px}
+  .form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}
+  .section-head{display:block}.section-head p{margin-top:8px}
+  .footer-inner{flex-direction:column;align-items:flex-start}
+  section{padding:55px 0}
+}
+
+/* AUTHENTICATION */
+html.auth-locked,body.auth-locked{overflow:hidden;height:100%;overscroll-behavior:none}
+.auth-screen{
+  position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:20px;overflow:hidden;touch-action:none;background:
+  radial-gradient(circle at 50% 0%,rgba(22,140,255,.16),transparent 30rem),
+  #05070b;
+}
+.auth-box{
+  width:min(500px,100%);max-height:92vh;overflow-y:auto;padding:32px;border:1px solid var(--line);border-radius:24px;
+  background:linear-gradient(145deg,rgba(13,19,29,.98),rgba(6,10,15,.98));
+  box-shadow:0 30px 100px rgba(0,0,0,.55);text-align:center;touch-action:pan-y;
+}
+.auth-logo{display:flex;justify-content:center;align-items:center;gap:12px;font-weight:950;font-size:21px;margin-bottom:22px}
+.auth-logo span{color:var(--blue)}
+.auth-logo .brand-mark{width:46px;height:46px}
+.auth-kicker{font-size:11px;letter-spacing:2px;color:#73bdff;font-weight:900}
+.auth-box h1{font-size:32px;letter-spacing:-1px;margin:9px 0 8px}
+.auth-subtitle{color:var(--muted);font-size:14px;margin-bottom:23px}
+.access-choice{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.access-card{
+  flex:1 1 150px;max-width:220px;
+  border:1px solid var(--line);border-radius:999px;background:#0a1018;color:#fff;
+  padding:13px 18px;cursor:pointer;transition:.2s;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+}
+.access-card:hover{transform:translateY(-2px);border-color:rgba(22,140,255,.55);background:#0d1621}
+.access-icon{font-size:19px;line-height:1}
+.access-card strong{font-size:14px;font-weight:800}
+.access-card small{display:none}
+.login-form,.visitor-confirm{text-align:left}
+.security-note{padding:10px 12px;border:1px solid rgba(22,140,255,.2);background:rgba(22,140,255,.07);border-radius:10px;color:#bfe3ff;font-size:12px;margin-bottom:17px}
+.login-form label{margin-top:12px}
+.login-form input{margin-bottom:2px}
+.full-btn{width:100%;margin-top:16px}
+.login-error{color:#ff8181;font-size:12px;min-height:18px;text-align:center;margin-top:9px}
+.back-access{display:block;margin:13px auto 0;border:0;background:none;color:#91a0af;cursor:pointer;font-size:12px}
+.visitor-confirm{text-align:center}
+.visitor-icon{font-size:48px;margin:8px 0}.visitor-confirm h2{font-size:24px}
+.visitor-confirm p{color:var(--muted);font-size:14px;line-height:1.6;margin:8px 0}
+.demo-warning{margin-top:23px;color:#778493;font-size:10px;line-height:1.5}
+.hidden{display:none!important}
+.admin-only,.admin-only-section{display:none}
+body.admin-mode .admin-only{display:inline-flex}
+body.admin-mode .admin-only-section{display:block}
+body.admin-mode .visitor-only{display:none}
+.admin-panel{border:1px solid rgba(22,140,255,.25);background:linear-gradient(145deg,#0b121b,#070b11);border-radius:20px;padding:28px}
+.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}
+.admin-stats div{border:1px solid var(--line);background:#0b1018;border-radius:12px;padding:16px}
+.admin-stats b{display:block;font-size:21px;margin-bottom:4px}.admin-stats span{color:var(--muted);font-size:11px}
+.admin-list{display:grid;gap:10px}
+.admin-item{display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid var(--line);border-radius:12px;padding:13px;background:#0a0f16}
+.admin-item-main{display:flex;align-items:center;gap:12px;min-width:0}.admin-item-icon{font-size:25px}
+.admin-item-main strong{display:block}.admin-item-main small{display:block;color:var(--muted);margin-top:3px}
+.admin-actions{display:flex;gap:7px}.mini-btn{border:1px solid var(--line);background:#111823;color:#fff;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:12px}
+.mini-btn:hover{border-color:rgba(22,140,255,.5)}
+.mini-btn.delete:hover{border-color:rgba(255,90,90,.6)}
+@media(max-width:570px){
+  .auth-box{padding:24px 18px}.access-card{flex:1 1 100%;max-width:none}
+  .admin-stats{grid-template-columns:1fr}.admin-item{align-items:flex-start;flex-direction:column}
+  .admin-actions{width:100%}.mini-btn{flex:1}
+}
+
+</style>
+</head>
+<body>
+
+
+<div id="authScreen" class="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div>DEVLOPER <span>TECH</span></div>
+    </div>
+    <p class="auth-kicker">PORTAL DE PROJETOS</p>
+    <h1 id="authTitle">Como você deseja entrar?</h1>
+    <p class="auth-subtitle" id="authSubtitle">Escolha um tipo de acesso para continuar.</p>
+
+    <div class="access-choice" id="accessChoice">
+      <button class="access-card" id="adminChoice">
+        <span class="access-icon">🔐</span>
+        <strong>Administrador</strong>
+        <small>Acesso exclusivo do dono</small>
+      </button>
+      <button class="access-card" id="visitorChoice">
+        <span class="access-icon">👤</span>
+        <strong>Visitante</strong>
+        <small>Somente visualizar projetos</small>
+      </button>
+    </div>
+
+    <form id="adminLogin" class="login-form hidden">
+      <div class="security-note">🔒 Área restrita da administração</div>
+      <label for="adminUser">Usuário</label>
+      <input id="adminUser" autocomplete="username" placeholder="Digite o usuário" required>
+      <label for="adminPass">Senha</label>
+      <input id="adminPass" type="password" autocomplete="current-password" placeholder="Digite a senha" required>
+      <button class="btn primary full-btn" type="submit">Entrar no painel →</button>
+      <p class="login-error" id="loginError"></p>
+      <button type="button" class="back-access" id="backAccess">← Voltar para opções</button>
+    </form>
+
+    <div class="visitor-confirm hidden" id="visitorConfirm">
+      <div class="visitor-icon">👋</div>
+      <h2>Modo visitante</h2>
+      <p>Você terá acesso apenas para visualizar os projetos publicados.</p>
+      <button class="btn primary full-btn" id="enterVisitor">Entrar como visitante</button>
+      <button class="back-access" id="backVisitor">← Voltar para opções</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="container nav">
+    <a class="brand" href="#inicio">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <span>DEVLOPER <em>TECH</em></span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#inicio">Início</a>
+      <a href="#projetos">Projetos</a>
+      <a href="#sobre">Sobre</a>
+      <a href="#publicar" class="nav-btn admin-only">+ Publicar projeto</a>
+      <a href="#adminPanel" class="nav-btn admin-only">⚙ Painel</a>
+      <button class="nav-btn" id="logoutBtn" style="cursor:pointer">Sair</button>
+    </nav>
+    <button class="menu" id="menuBtn" aria-label="Abrir menu">☰</button>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="inicio">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow"><span class="dot"></span> Portfólio de tecnologia</div>
+      <h1>Ideias que viram <span>tecnologia.</span></h1>
+      <p>
+        Bem-vindo à Devloper Tech. Um espaço para apresentar projetos de programação,
+        jogos, sites, aplicativos e experiências digitais desenvolvidas ao longo da jornada.
+      </p>
+      <div class="actions">
+        <a href="#projetos" class="btn-pill primary">🚀 Ver projetos</a>
+        <a href="#publicar" class="btn-pill admin-only">＋ Publicar projeto</a>
+        <a href="#sobre" class="btn-pill visitor-only">ℹ Sobre a empresa</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="code-window">
+        <div class="window-top"><i class="circle"></i><i class="circle"></i><i class="circle"></i></div>
+        <div class="code">
+          <div><span class="blue">const</span> empresa = <span class="green">"Devloper Tech"</span>;</div>
+          <div><span class="blue">const</span> foco = [<span class="green">"Web"</span>, <span class="green">"Games"</span>, <span class="green">"Apps"</span>];</div>
+          <br>
+          <div><span class="blue">function</span> <span class="white">criarProjeto</span>(ideia) {</div>
+          <div>&nbsp;&nbsp;<span class="blue">return</span> <span class="green">"transformar em realidade"</span>;</div>
+          <div>}</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b id="statProjects">3</b><small>Projetos</small></div>
+        <div class="stat"><b>100%</b><small>Dedicação</small></div>
+        <div class="stat"><b>∞</b><small>Ideias</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projetos">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Projetos em destaque</h2>
+        <p>Conheça alguns dos projetos da Devloper Tech. Use a busca e os filtros para encontrar o que procura.</p>
+      </div>
+    </div>
+
+    <div class="searchbar">
+      <input id="search" type="search" placeholder="🔎  Pesquisar projeto..." autocomplete="off">
+    </div>
+    <div class="filters" id="filters">
+      <button class="filter active" data-filter="Todos">Todos</button>
+      <button class="filter" data-filter="Jogos">🎮 Jogos</button>
+      <button class="filter" data-filter="Sites">🌐 Sites</button>
+      <button class="filter" data-filter="Aplicativos">📱 Aplicativos</button>
+      <button class="filter" data-filter="Programas">💻 Programas</button>
+      <button class="filter" data-filter="IA">🤖 IA</button>
+    </div>
+
+    <div class="projects" id="projects"></div>
+    <div class="empty" id="empty">Nenhum projeto encontrado. Tente mais tarde ou espere até lançar um projeto.</div>
+  </div>
+</section>
+
+<section id="sobre">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Sobre a Devloper Tech</h2>
+        <p>Uma identidade criada para reunir projetos, experiências e ideias de tecnologia em um só lugar.</p>
+      </div>
+    </div>
+    <div class="about">
+      <div class="panel">
+        <h3>Transformando ideias em tecnologia.</h3>
+        <p>
+          A Devloper Tech nasceu como um projeto de tecnologia para organizar e apresentar
+          trabalhos de programação de forma profissional. O objetivo é evoluir continuamente,
+          experimentando novas tecnologias e transformando ideias em projetos reais.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Áreas</h3>
+        <div class="features" id="areaFeatures">
+          <div class="feature" role="button" tabindex="0" data-area-filter="Sites" aria-label="Filtrar projetos Web">
+            <b>🌐 Web</b><span>Sites e experiências interativas.</span>
+          </div>
+          <div class="feature" role="button" tabindex="0" data-area-filter="Jogos" aria-label="Filtrar projetos Games">
+            <b>🎮 Games</b><span>Jogos e protótipos digitais.</span>
+          </div>
+          <div class="feature" role="button" tabindex="0" data-area-filter="Aplicativos" aria-label="Filtrar projetos Apps">
+            <b>📱 Apps</b><span>Aplicativos e soluções móveis.</span>
+          </div>
+          <div class="feature" role="button" tabindex="0" data-area-filter="IA" aria-label="Filtrar projetos de Inteligência Artificial">
+            <b>🤖 IA</b><span>Experimentação com inteligência artificial.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="publicar" class="admin-only-section">
+  <div class="container">
+    <div class="add-box">
+      <div class="section-head" style="margin-bottom:0">
+        <div>
+          <h2>➕ Publicar projeto</h2>
+          <p>Adicione um novo projeto ao portfólio. Nesta primeira versão, os projetos ficam salvos neste navegador.</p>
+        </div>
+      </div>
+
+      <form id="projectForm">
+        <div class="form-grid">
+          <div>
+            <label for="name">Nome do projeto</label>
+            <input id="name" required placeholder="Ex.: Meu novo site">
+          </div>
+          <div>
+            <label for="category">Categoria</label>
+            <select id="category" required>
+              <option value="Jogos">🎮 Jogos</option>
+              <option value="Sites">🌐 Sites</option>
+              <option value="Aplicativos">📱 Aplicativos</option>
+              <option value="Programas">💻 Programas</option>
+              <option value="IA">🤖 IA</option>
+            </select>
+          </div>
+          <div class="full">
+            <label for="description">Descrição</label>
+            <textarea id="description" required placeholder="Explique brevemente o que é o projeto..."></textarea>
+          </div>
+          <div>
+            <label for="emoji">Ícone/capa</label>
+            <input id="emoji" maxlength="4" value="💡" placeholder="🎮">
+          </div>
+          <div>
+            <label for="tech">Tecnologias</label>
+            <input id="tech" placeholder="HTML, CSS, JavaScript">
+          </div>
+          <div>
+            <label for="projectFile">Arquivo do projeto (.html)</label>
+            <input id="projectFile" type="file" accept=".html,.htm,text/html">
+            <span class="note" id="projectFileName"></span>
+          </div>
+          <div>
+            <label for="codeLink">Link do código (opcional)</label>
+            <input id="codeLink" type="url" placeholder="https://github.com/...">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" type="submit">🚀 Adicionar projeto</button>
+          <span class="note">Os dados são armazenados com segurança no servidor.</span>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+
+<section id="adminPanel" class="admin-only-section">
+  <div class="container">
+    <div class="admin-panel">
+      <div class="section-head" style="margin-bottom:0">
+        <div>
+          <div class="eyebrow"><span class="dot"></span> Área administrativa</div>
+          <h2>Painel do proprietário</h2>
+          <p>Gerencie os projetos que aparecem no portfólio da Devloper Tech.</p>
+        </div>
+        <button class="btn primary" id="focusPublish">＋ Novo projeto</button>
+      </div>
+      <div class="admin-stats">
+        <div><b id="adminCount">0</b><span>Projetos publicados</span></div>
+        <div><b>ADMIN</b><span>Nível de acesso</span></div>
+        <div><b>🔒</b><span>Área protegida</span></div>
+      </div>
+      <div class="admin-list" id="adminList"></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-brand">DEVLOPER <span>TECH</span></div>
+    <div>Transformando ideias em tecnologia. © <span id="year"></span></div>
+  </div>
+</footer>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="eyebrow" id="modalCategory">Projeto</div>
+        <h2 id="modalTitle"></h2>
+      </div>
+      <button class="close" id="closeModal">×</button>
+    </div>
+    <div class="modal-cover" id="modalCover">🚀</div>
+    <p id="modalDescription"></p>
+    <div class="tags" id="modalTags"></div>
+    <div class="modal-links" id="modalLinks"></div>
+  </div>
+</div>
+
+<script>
+const defaultProjects = [];
+const API_URL = '/api/store/devloper-tech-projects';
+
+let projects = [];
+let currentFilter = "Todos";
+
+const projectsEl = document.getElementById("projects");
+const emptyEl = document.getElementById("empty");
+const searchEl = document.getElementById("search");
+
+async function carregarDoServidor(){
+  try{
+    const resp = await fetch(API_URL);
+    if(resp.ok){
+      const dados = await resp.json();
+      projects = Array.isArray(dados) && dados.length ? dados : defaultProjects;
+    } else {
+      projects = defaultProjects;
+    }
+  } catch(e){
+    console.error('Falha ao carregar do servidor:', e);
+    projects = defaultProjects;
+  }
+  render();
+  if(document.body.classList.contains('admin-mode')) renderAdmin();
+}
+
+async function save(){
+  try{
+    await fetch(API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(projects)
+    });
+  } catch(e){
+    console.error('Falha ao salvar no servidor:', e);
+    alert('Não foi possível salvar no servidor. Verifique sua conexão.');
+  }
+}
+
+// Sincroniza com o servidor a cada 15s para refletir alterações feitas em outras máquinas
+setInterval(async () => {
+  try{
+    const resp = await fetch(API_URL);
+    if(resp.ok){
+      projects = await resp.json();
+      render();
+      if(document.body.classList.contains('admin-mode')) renderAdmin();
+    }
+  } catch(e){ /* silencioso */ }
+}, 15000);
+
+function render(){
+  const query = searchEl.value.toLowerCase().trim();
+  const visible = projects.filter(p => {
+    const categoryOK = currentFilter === "Todos" || p.category === currentFilter;
+    const text = [p.name,p.category,p.description,...(p.tech||[])].join(" ").toLowerCase();
+    return categoryOK && text.includes(query);
+  });
+
+  projectsEl.innerHTML = "";
+  emptyEl.style.display = visible.length ? "none" : "block";
+
+  visible.forEach(p => {
+    const card = document.createElement("article");
+    card.className = "card";
+    const coverClass = p.category === "Jogos" ? "game" : p.category === "Sites" ? "web" : "app";
+    card.innerHTML = `
+      <div class="card-icon ${coverClass}"><span>${escapeHTML(p.emoji || "💡")}</span></div>
+      <div class="card-info">
+        <h3>${escapeHTML(p.name)}</h3>
+      </div>
+      <div class="card-action">
+        <button class="btn-open" onclick="openProject('${p.id}')">Abrir</button>
+      </div>`;
+    projectsEl.appendChild(card);
+  });
+  document.getElementById("statProjects").textContent = projects.length;
+}
+
+function escapeHTML(value){
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+}
+
+window.openProject = function(id){
+  const p = projects.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById("modalCategory").textContent = p.category;
+  document.getElementById("modalTitle").textContent = p.name;
+  document.getElementById("modalCover").textContent = p.emoji || "💡";
+  document.getElementById("modalDescription").textContent = p.description;
+  document.getElementById("modalTags").innerHTML = (p.tech||[]).map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join("");
+  const links = document.getElementById("modalLinks");
+  links.innerHTML = "";
+  if(p.projectHtml){
+    const btn=document.createElement("button"); btn.type="button"; btn.className="btn primary"; btn.textContent="▶ Abrir projeto";
+    btn.onclick = () => {
+      const blob = new Blob([p.projectHtml], {type:"text/html"});
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    };
+    links.appendChild(btn);
+  } else if(p.link){
+    const a=document.createElement("a"); a.className="btn primary"; a.href=p.link; a.target="_blank"; a.rel="noopener"; a.textContent="▶ Abrir projeto"; links.appendChild(a);
+  }
+  if(p.codeLink){
+    const a=document.createElement("a"); a.className="btn"; a.href=p.codeLink; a.target="_blank"; a.rel="noopener"; a.textContent="💻 Ver código"; links.appendChild(a);
+  }
+  if(!p.projectHtml && !p.link && !p.codeLink){
+    links.innerHTML = '<span class="note">Os links deste projeto ainda não foram cadastrados.</span>';
+  }
+  document.getElementById("modal").classList.add("show");
+};
+
+document.getElementById("closeModal").onclick = () => document.getElementById("modal").classList.remove("show");
+document.getElementById("modal").addEventListener("click", e => {
+  if(e.target.id === "modal") e.currentTarget.classList.remove("show");
+});
+
+function readFileAsText(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
+}
+
+const projectFileInput = document.getElementById("projectFile");
+const projectFileName = document.getElementById("projectFileName");
+projectFileInput.addEventListener("change", () => {
+  projectFileName.textContent = projectFileInput.files[0] ? `Selecionado: ${projectFileInput.files[0].name}` : "";
+});
+
+document.getElementById("projectForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if(!document.body.classList.contains("admin-mode")) return;
+  if(e.currentTarget.dataset.editingId) return;
+
+  const file = projectFileInput.files[0];
+  let projectHtml = "";
+  if(file){
+    try{ projectHtml = await readFileAsText(file); }
+    catch(err){ alert("Não foi possível ler o arquivo .html enviado."); return; }
+  }
+
+  const project = {
+    id: Date.now().toString(),
+    name: document.getElementById("name").value.trim(),
+    category: document.getElementById("category").value,
+    description: document.getElementById("description").value.trim(),
+    emoji: document.getElementById("emoji").value.trim() || "💡",
+    tech: document.getElementById("tech").value.split(",").map(x=>x.trim()).filter(Boolean),
+    projectHtml: projectHtml,
+    projectFileName: file ? file.name : "",
+    codeLink: document.getElementById("codeLink").value.trim()
+  };
+  projects.unshift(project);
+  save();
+  e.target.reset();
+  document.getElementById("emoji").value="💡";
+  projectFileName.textContent = "";
+  render();
+  document.getElementById("projetos").scrollIntoView({behavior:"smooth"});
+});
+
+searchEl.addEventListener("input", render);
+document.querySelectorAll(".filter").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.filter;
+    document.querySelectorAll("[data-area-filter]").forEach(a => {
+      a.classList.toggle("active", a.dataset.areaFilter === currentFilter);
+    });
+    render();
+  });
+});
+
+// Áreas interativas: ao clicar, filtra os projetos e leva o usuário até eles.
+document.querySelectorAll("[data-area-filter]").forEach(area => {
+  const activateArea = () => {
+    const filter = area.dataset.areaFilter;
+    currentFilter = filter;
+
+    document.querySelectorAll(".filter").forEach(b => {
+      b.classList.toggle("active", b.dataset.filter === filter);
+    });
+    document.querySelectorAll("[data-area-filter]").forEach(a => {
+      a.classList.toggle("active", a === area);
+    });
+
+    render();
+    document.getElementById("projetos").scrollIntoView({behavior:"smooth", block:"start"});
+  };
+
+  area.addEventListener("click", activateArea);
+  area.addEventListener("keydown", e => {
+    if(e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      activateArea();
+    }
+  });
+});
+
+document.getElementById("menuBtn").addEventListener("click", () => {
+  document.getElementById("navLinks").classList.toggle("open");
+});
+document.querySelectorAll(".nav-links a, .nav-links button").forEach(el => el.addEventListener("click", () => {
+  document.getElementById("navLinks").classList.remove("open");
+}));
+document.getElementById("year").textContent = new Date().getFullYear();
+carregarDoServidor();
+
+/* AUTH / ADMIN MODE */
+const DEMO_ADMIN_USER = "admin";
+
+const DEMO_ADMIN_PASS_HASH = "85570c749440283395552079354e2f0ea3e922955d28fe04fb07ff394628d342";
+
+async function sha256(texto){
+  const dados = new TextEncoder().encode(texto);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", dados);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+const authScreen = document.getElementById("authScreen");
+const accessChoice = document.getElementById("accessChoice");
+const adminLogin = document.getElementById("adminLogin");
+const visitorConfirm = document.getElementById("visitorConfirm");
+const authTitle = document.getElementById("authTitle");
+const authSubtitle = document.getElementById("authSubtitle");
+const loginError = document.getElementById("loginError");
+
+function lockAuthScroll(){
+  document.documentElement.classList.add("auth-locked");
+  document.body.classList.add("auth-locked");
+}
+function unlockAuthScroll(){
+  document.documentElement.classList.remove("auth-locked");
+  document.body.classList.remove("auth-locked");
+}
+
+function showAccessChoice(){
+  accessChoice.classList.remove("hidden");
+  adminLogin.classList.add("hidden");
+  visitorConfirm.classList.add("hidden");
+  authTitle.textContent = "Como você deseja entrar?";
+  authSubtitle.textContent = "Escolha um tipo de acesso para continuar.";
+  loginError.textContent = "";
+  lockAuthScroll();
+}
+document.getElementById("adminChoice").onclick = () => {
+  accessChoice.classList.add("hidden"); adminLogin.classList.remove("hidden");
+  authTitle.textContent = "Login do administrador"; authSubtitle.textContent = "Acesso exclusivo ao proprietário da Devloper Tech.";
+  document.getElementById("adminUser").focus();
+};
+document.getElementById("visitorChoice").onclick = () => {
+  accessChoice.classList.add("hidden"); visitorConfirm.classList.remove("hidden");
+  authTitle.textContent = "Acesso de visitante"; authSubtitle.textContent = "Visualização dos projetos sem permissão de edição.";
+};
+document.getElementById("backAccess").onclick = showAccessChoice;
+document.getElementById("backVisitor").onclick = showAccessChoice;
+
+function enterSite(mode){
+  authScreen.style.display = "none";
+  unlockAuthScroll();
+  document.getElementById("navLinks").classList.remove("open");
+  document.body.classList.toggle("admin-mode", mode === "admin");
+  sessionStorage.setItem("devloperTechRole", mode);
+  if(mode === "admin") renderAdmin();
+}
+document.getElementById("enterVisitor").onclick = () => enterSite("visitor");
+
+adminLogin.addEventListener("submit", async e => {
+  e.preventDefault();
+  const user = document.getElementById("adminUser").value.trim();
+  const pass = document.getElementById("adminPass").value;
+  const passHash = await sha256(pass);
+  if(user === DEMO_ADMIN_USER && passHash === DEMO_ADMIN_PASS_HASH){
+    loginError.textContent = "";
+    adminLogin.reset();
+    enterSite("admin");
+  } else {
+    loginError.textContent = "Usuário ou senha incorretos.";
+  }
+});
+
+document.getElementById("logoutBtn").onclick = () => {
+  sessionStorage.removeItem("devloperTechRole");
+  document.body.classList.remove("admin-mode");
+  document.getElementById("navLinks").classList.remove("open");
+  authScreen.style.display = "flex";
+  showAccessChoice();
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+
+document.getElementById("focusPublish").onclick = () => {
+  document.getElementById("publicar").scrollIntoView({behavior:"smooth"});
+};
+
+function renderAdmin(){
+  const list = document.getElementById("adminList");
+  document.getElementById("adminCount").textContent = projects.length;
+  list.innerHTML = projects.map(p => `
+    <div class="admin-item">
+      <div class="admin-item-main">
+        <span class="admin-item-icon">${escapeHTML(p.emoji || "💡")}</span>
+        <div><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.category)}</small></div>
+      </div>
+      <div class="admin-actions">
+        <button class="mini-btn" onclick="editProject('${p.id}')">✏ Editar</button>
+        <button class="mini-btn delete" onclick="deleteProject('${p.id}')">🗑 Excluir</button>
+      </div>
+    </div>`).join("") || '<p class="note">Nenhum projeto cadastrado.</p>';
+}
+window.deleteProject = function(id){
+  if(!document.body.classList.contains("admin-mode")) return;
+  const p = projects.find(x=>x.id===id);
+  if(!p) return;
+  if(confirm(`Excluir o projeto "${p.name}"?`)){
+    projects = projects.filter(x=>x.id!==id);
+    save(); render(); renderAdmin();
+  }
+};
+window.editProject = function(id){
+  if(!document.body.classList.contains("admin-mode")) return;
+  const p = projects.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById("name").value=p.name;
+  document.getElementById("category").value=p.category;
+  document.getElementById("description").value=p.description;
+  document.getElementById("emoji").value=p.emoji || "💡";
+  document.getElementById("tech").value=(p.tech||[]).join(", ");
+  document.getElementById("codeLink").value=p.codeLink || "";
+  projectFileInput.value="";
+  projectFileName.textContent = p.projectFileName ? `Arquivo atual: ${p.projectFileName} (envie um novo para substituir)` : "";
+  document.getElementById("projectForm").dataset.editingId=id;
+  document.getElementById("publicar").scrollIntoView({behavior:"smooth"});
+};
+
+document.getElementById("projectForm").addEventListener("submit", async e => {
+  const form=e.currentTarget;
+  if(!document.body.classList.contains("admin-mode")){
+    e.preventDefault(); return;
+  }
+  const editingId=form.dataset.editingId;
+  if(editingId){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const index=projects.findIndex(x=>x.id===editingId);
+    if(index>=0){
+      const file = projectFileInput.files[0];
+      let projectHtml = projects[index].projectHtml || "";
+      let projectFileNameVal = projects[index].projectFileName || "";
+      if(file){
+        try{ projectHtml = await readFileAsText(file); projectFileNameVal = file.name; }
+        catch(err){ alert("Não foi possível ler o arquivo .html enviado."); return; }
+      }
+      projects[index]={
+        ...projects[index],
+        name:document.getElementById("name").value.trim(),
+        category:document.getElementById("category").value,
+        description:document.getElementById("description").value.trim(),
+        emoji:document.getElementById("emoji").value.trim() || "💡",
+        tech:document.getElementById("tech").value.split(",").map(x=>x.trim()).filter(Boolean),
+        projectHtml: projectHtml,
+        projectFileName: projectFileNameVal,
+        codeLink:document.getElementById("codeLink").value.trim()
+      };
+      save(); render(); renderAdmin(); form.reset(); form.dataset.editingId="";
+      document.getElementById("emoji").value="💡";
+      projectFileName.textContent = "";
+      document.getElementById("projetos").scrollIntoView({behavior:"smooth"});
+    }
+  }
+}, true);
+
+/* Prevent visitor access to admin actions even if they navigate directly. */
+const initialRole = sessionStorage.getItem("devloperTechRole");
+if(initialRole === "admin" || initialRole === "visitor"){
+  enterSite(initialRole);
+} else {
+  showAccessChoice();
+}
+
+</script>
+</body>
+</html>
